@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package >
+	<metadata>
+		<id>Shuttle.Esb.Sql.Subscription</id>
+		<version>{semver}</version>
+		<authors>Eben Roux</authors>
+		<owners>Eben Roux</owners>
+		<licenseUrl>https://github.com/shuttle/Shuttle.Esb.Sql.Subscription/raw/master/LICENSE</licenseUrl>
+		<projectUrl>https://github.com/shuttle/Shuttle.Esb.Sql.Subscription</projectUrl>
+		<iconUrl>https://raw.githubusercontent.com/Shuttle/Shuttle.Esb.Sql.Subscription/master/.media/logo.png</iconUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Sql RDBMS implementation of the IQueue interface for use with Shuttle.Esb.</description>
+		<releaseNotes/>
+		<copyright>Copyright (c) {year}, Eben Roux</copyright>
+		<tags>Shuttle.Esb.Sql.Subscription SqlServer</tags>
+		<dependencies>
+			<dependency id="Shuttle.Esb" version="{Shuttle.Esb-version}" />
+			<dependency id="Shuttle.Core.Infrastructure" version="{Shuttle.Core.Infrastructure-version}" />
+			<dependency id="Shuttle.Core.Data" version="{Shuttle.Core.Data-version}" />
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="..\..\..\Shuttle.Esb.Sql.Subscription\.scripts\**\*.sql" target="scripts" />
+		<file src="lib\**\*.*" target="lib" />
+	</files>
+</package>
