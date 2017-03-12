@@ -52,9 +52,12 @@
 
 		<ItemGroup>
 			<NugetBinaries Include="$(DeploymentFolder)\release\**\$(PackageAssembly).dll" />
+      <Script Include="..\Shuttle.Esb.Sql.Subscription\.scripts\**\SubscriptionManagerCreate.sql" />
 		</ItemGroup>
 
-		<Copy SourceFiles="package.nuspec" DestinationFolder="$(DeploymentFolder)\nuget\" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(Script)" DestinationFolder="$(DeploymentFolder)\nuget\scripts\%(RecursiveDir)" SkipUnchangedFiles="false" />
+
+    <Copy SourceFiles="package.nuspec" DestinationFolder="$(DeploymentFolder)\nuget\" SkipUnchangedFiles="false" />
 		<Copy SourceFiles="@(NugetBinaries)" DestinationFolder="$(DeploymentFolder)\nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="false" />
 
 		<RegexFindAndReplace Files="$(DeploymentFolder)\nuget\package.nuspec" FindExpression="\{semver\}" ReplacementText="$(SemanticVersion)" />

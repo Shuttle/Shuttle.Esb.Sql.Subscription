@@ -1,6 +1,6 @@
 namespace Shuttle.Esb.Sql.Subscription
 {
-	public interface ISqlConfiguration
+	public interface ISubscriptionConfiguration
 	{
 		string SubscriptionManagerProviderName { get; }
 		string SubscriptionManagerConnectionString { get; }

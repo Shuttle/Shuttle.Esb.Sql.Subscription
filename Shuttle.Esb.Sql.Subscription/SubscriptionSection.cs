@@ -4,7 +4,7 @@ using Shuttle.Core.Infrastructure;
 
 namespace Shuttle.Esb.Sql.Subscription
 {
-	public class SqlSection : ConfigurationSection
+	public class SubscriptionSection : ConfigurationSection
 	{
 		[ConfigurationProperty("subscriptionManagerConnectionStringName", IsRequired = false,
 			DefaultValue = "Subscription")]
@@ -19,10 +19,10 @@ namespace Shuttle.Esb.Sql.Subscription
 			get { return (bool) this["ignoreSubscribe"]; }
 		}
 
-		public static SqlConfiguration Configuration()
+		public static SubscriptionConfiguration Configuration()
 		{
-			var section = ConfigurationSectionProvider.Open<SqlSection>("shuttle", "sqlSubscription");
-			var configuration = new SqlConfiguration();
+			var section = ConfigurationSectionProvider.Open<SubscriptionSection>("shuttle", "subscription");
+			var configuration = new SubscriptionConfiguration();
 
 			var subscriptionManagerConnectionStringName = "Subscription";
 
@@ -44,7 +44,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
 			if (settings == null)
 			{
-				throw new InvalidOperationException(string.Format(SqlResources.ConnectionStringMissing, connectionStringName));
+				throw new InvalidOperationException(string.Format(SubscriptionResources.ConnectionStringMissing, connectionStringName));
 			}
 
 			return settings;

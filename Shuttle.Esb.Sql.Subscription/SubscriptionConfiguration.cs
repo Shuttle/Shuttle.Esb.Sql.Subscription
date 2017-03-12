@@ -1,8 +1,8 @@
 namespace Shuttle.Esb.Sql.Subscription
 {
-	public class SqlConfiguration : ISqlConfiguration
+	public class SubscriptionConfiguration : ISubscriptionConfiguration
 	{
-		public SqlConfiguration()
+		public SubscriptionConfiguration()
 		{
 		    IgnoreSubscribe = false;
 		}

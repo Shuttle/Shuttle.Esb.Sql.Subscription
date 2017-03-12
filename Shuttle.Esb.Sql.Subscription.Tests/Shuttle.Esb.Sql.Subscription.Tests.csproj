@@ -84,17 +84,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SqlSection\SqlSectionFixture.cs" />
+    <Compile Include="SubscriptionSection\SqlSectionFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <None Include="SqlSection\files\Sql-Grouped.config">
+    <None Include="SubscriptionSection\files\Subscription-Grouped.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="SqlSection\files\Sql.config">
+    <None Include="SubscriptionSection\files\Subscription.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

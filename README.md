@@ -1,6 +1,6 @@
 # Shuttle.Esb.Sql.Subscription
 
-Sql RDBS implementation of the `IQueue` interface for use with Shuttl.Esb.
+Sql RDBS implementation of the `IQueue` interface for use with Shuttle.Esb.
 
 # Supported providers
 
@@ -16,7 +16,7 @@ Currently only the `System.Data.SqlClient` provider name is supported but this c
   
   <sqlSubscription
 	subscriptionManagerConnectionStringName="Subscription"
-	idempotenceServiceConnectionStringName="Idempotence"
+	ignoreSubscribe="true|false"
   />
   .
   .
@@ -27,7 +27,3 @@ Currently only the `System.Data.SqlClient` provider name is supported but this c
 # SubscriptionManager
 
 A Sql Server based `ISubscriptionManager` implementation is also provided.  The subscription manager caches all subscriptions forever so should a new subscriber be added be sure to restart the publisher endpoint service.
-
-# IdempotenceService
-
-A `IIdempotenceService` implementation is also available for Sql Server.

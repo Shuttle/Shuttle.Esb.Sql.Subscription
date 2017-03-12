@@ -16,7 +16,7 @@ namespace Shuttle.Esb.Sql.Subscription
 		private readonly IDatabaseGateway _databaseGateway;
 
 		private readonly List<string> _deferredSubscriptions = new List<string>();
-	    private readonly ISqlConfiguration _configuration;
+	    private readonly ISubscriptionConfiguration _configuration;
 	    private readonly IScriptProvider _scriptProvider;
 
 		private readonly Dictionary<string, List<string>> _subscribers = new Dictionary<string, List<string>>();
@@ -27,7 +27,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
 		private bool _deferSubscribtions = true;
 
-		public SubscriptionManager(IServiceBusEvents events, IServiceBusConfiguration serviceBusConfiguration, ISqlConfiguration configuration, IScriptProvider scriptProvider,
+		public SubscriptionManager(IServiceBusEvents events, IServiceBusConfiguration serviceBusConfiguration, ISubscriptionConfiguration configuration, IScriptProvider scriptProvider,
 			IDatabaseContextFactory databaseContextFactory, IDatabaseGateway databaseGateway)
 		{
 			Guard.AgainstNull(events, "events");
@@ -49,7 +49,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
 			if (string.IsNullOrEmpty(_subscriptionProviderName))
 			{
-				throw new ConfigurationErrorsException(string.Format(SqlResources.ProviderNameEmpty,
+				throw new ConfigurationErrorsException(string.Format(SubscriptionResources.ProviderNameEmpty,
 					"SubscriptionManager"));
 			}
 
@@ -57,7 +57,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
 			if (string.IsNullOrEmpty(_subscriptionConnectionString))
 			{
-				throw new ConfigurationErrorsException(string.Format(SqlResources.ConnectionStringEmpty,
+				throw new ConfigurationErrorsException(string.Format(SubscriptionResources.ConnectionStringEmpty,
 					"SubscriptionManager"));
 			}
 
@@ -78,7 +78,7 @@ namespace Shuttle.Esb.Sql.Subscription
                     {
                         if (!ex.Message.Equals("There is already an object named 'SubscriberMessageType' in the database.", StringComparison.OrdinalIgnoreCase))
                         {
-                            throw new DataException(SqlResources.SubscriptionManagerCreateException, ex);
+                            throw new DataException(SubscriptionResources.SubscriptionManagerCreateException, ex);
                         }
                     }
                 }

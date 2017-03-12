@@ -8,14 +8,14 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 	[TestFixture]
 	public class SqlSectionFixture
 	{
-		protected SqlSection GetSection(string file)
+		protected SubscriptionSection GetSection(string file)
 		{
-			return ConfigurationSectionProvider.OpenFile<SqlSection>("shuttle", "sqlSubscription", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(@".\SqlSection\files\{0}", file)));
+			return ConfigurationSectionProvider.OpenFile<SubscriptionSection>("shuttle", "subscription", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(@".\SubscriptionSection\files\{0}", file)));
 		}
 
 		[Test]
-		[TestCase("Sql.config")]
-		[TestCase("Sql-Grouped.config")]
+		[TestCase("Subscription.config")]
+		[TestCase("Subscription-Grouped.config")]
 		public void Should_be_able_to_get_full_section(string file)
 		{
 			var section = GetSection(file);

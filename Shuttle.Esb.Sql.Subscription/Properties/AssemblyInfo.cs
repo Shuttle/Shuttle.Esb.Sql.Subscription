@@ -26,10 +26,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Shuttle.Esb.Sql.Subscription for .NET Framework 4.6.1")]
 #endif
 
-[assembly: AssemblyVersion("6.0.18.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
 [assembly: AssemblyCopyright("Copyright © Eben Roux 2017")]
 [assembly: AssemblyProduct("Shuttle.Esb")]
 [assembly: AssemblyCompany("Shuttle")]
 [assembly: AssemblyConfiguration("Release")]
-[assembly: AssemblyInformationalVersion("6.0.18")]
+[assembly: AssemblyInformationalVersion("1.0.1")]
 [assembly: ComVisible(false)]
