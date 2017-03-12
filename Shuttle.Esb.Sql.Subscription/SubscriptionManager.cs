@@ -45,7 +45,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
 			events.Started += ServiceBus_Started;
 
-			_subscriptionProviderName = configuration.SubscriptionManagerProviderName;
+			_subscriptionProviderName = configuration.ProviderName;
 
 			if (string.IsNullOrEmpty(_subscriptionProviderName))
 			{
@@ -53,7 +53,7 @@ namespace Shuttle.Esb.Sql.Subscription
 					"SubscriptionManager"));
 			}
 
-			_subscriptionConnectionString = configuration.SubscriptionManagerConnectionString;
+			_subscriptionConnectionString = configuration.ConnectionString;
 
 			if (string.IsNullOrEmpty(_subscriptionConnectionString))
 			{

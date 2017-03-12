@@ -10,6 +10,8 @@ namespace Shuttle.Esb.Sql.Subscription
 
 			registry.AttemptRegister<IScriptProviderConfiguration, ScriptProviderConfiguration>();
 			registry.AttemptRegister<IScriptProvider, ScriptProvider>();
+
+			registry.AttemptRegister<ISubscriptionManager, SubscriptionManager>();
 		}
 	}
 }

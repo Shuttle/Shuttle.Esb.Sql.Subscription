@@ -7,8 +7,8 @@ namespace Shuttle.Esb.Sql.Subscription
 		    IgnoreSubscribe = false;
 		}
 
-	    public string SubscriptionManagerProviderName { get; set; }
-	    public string SubscriptionManagerConnectionString { get; set; }
+	    public string ProviderName { get; set; }
+	    public string ConnectionString { get; set; }
 		public bool IgnoreSubscribe { get; set; }
 	}
 }

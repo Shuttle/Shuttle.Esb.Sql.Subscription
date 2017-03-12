@@ -6,11 +6,11 @@ namespace Shuttle.Esb.Sql.Subscription
 {
 	public class SubscriptionSection : ConfigurationSection
 	{
-		[ConfigurationProperty("subscriptionManagerConnectionStringName", IsRequired = false,
+		[ConfigurationProperty("connectionStringName", IsRequired = false,
 			DefaultValue = "Subscription")]
-		public string SubscriptionManagerConnectionStringName
+		public string ConnectionStringName
 		{
-			get { return (string) this["subscriptionManagerConnectionStringName"]; }
+			get { return (string) this["connectionStringName"]; }
 		}
 
 		[ConfigurationProperty("ignoreSubscribe", IsRequired = false, DefaultValue = false)]
@@ -24,16 +24,16 @@ namespace Shuttle.Esb.Sql.Subscription
 			var section = ConfigurationSectionProvider.Open<SubscriptionSection>("shuttle", "subscription");
 			var configuration = new SubscriptionConfiguration();
 
-			var subscriptionManagerConnectionStringName = "Subscription";
+			var connectionStringName = "Subscription";
 
 			if (section != null)
 			{
-				subscriptionManagerConnectionStringName = section.SubscriptionManagerConnectionStringName;
+				connectionStringName = section.ConnectionStringName;
 				configuration.IgnoreSubscribe = section.IgnoreSubscribe;
 			}
 
-			configuration.SubscriptionManagerProviderName = GetSettings(subscriptionManagerConnectionStringName).ProviderName;
-			configuration.SubscriptionManagerConnectionString = GetSettings(subscriptionManagerConnectionStringName).ConnectionString;
+			configuration.ProviderName = GetSettings(connectionStringName).ProviderName;
+			configuration.ConnectionString = GetSettings(connectionStringName).ConnectionString;
 
 			return configuration;
 		}

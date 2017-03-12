@@ -22,7 +22,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
 			Assert.IsNotNull(section);
 
-			Assert.AreEqual("subscription-connection-string-name", section.SubscriptionManagerConnectionStringName);
+			Assert.AreEqual("connection-string-name", section.ConnectionStringName);
 			Assert.IsFalse(section.IgnoreSubscribe);
 		}
 	}
