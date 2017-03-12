@@ -11,6 +11,7 @@ namespace Shuttle.Esb.Sql.Subscription
 			registry.AttemptRegister<IScriptProviderConfiguration, ScriptProviderConfiguration>();
 			registry.AttemptRegister<IScriptProvider, ScriptProvider>();
 
+			registry.AttemptRegister<ISubscriptionConfiguration>(SubscriptionSection.Configuration());
 			registry.AttemptRegister<ISubscriptionManager, SubscriptionManager>();
 		}
 	}
