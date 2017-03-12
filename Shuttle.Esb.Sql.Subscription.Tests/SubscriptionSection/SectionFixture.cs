@@ -6,7 +6,7 @@ using Shuttle.Core.Infrastructure;
 namespace Shuttle.Esb.Sql.Subscription.Tests
 {
 	[TestFixture]
-	public class SqlSectionFixture
+	public class SectionFixture
 	{
 		protected SubscriptionSection GetSection(string file)
 		{
