@@ -9,7 +9,7 @@
 		<projectUrl>https://github.com/shuttle/Shuttle.Esb.Sql.Subscription</projectUrl>
 		<iconUrl>https://raw.githubusercontent.com/Shuttle/Shuttle.Esb.Sql.Subscription/master/.media/logo.png</iconUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Sql RDBMS implementation of the IQueue interface for use with Shuttle.Esb.</description>
+    <description>Sql RDBMS implementation of the ISubscriptionManager interface for use with Shuttle.Esb.</description>
 		<releaseNotes/>
 		<copyright>Copyright (c) {year}, Eben Roux</copyright>
 		<tags>Shuttle.Esb.Sql.Subscription SqlServer</tags>
