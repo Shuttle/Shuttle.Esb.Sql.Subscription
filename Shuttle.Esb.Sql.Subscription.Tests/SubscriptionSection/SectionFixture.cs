@@ -25,5 +25,15 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 			Assert.AreEqual("connection-string-name", section.ConnectionStringName);
 			Assert.IsFalse(section.IgnoreSubscribe);
 		}
-	}
+
+        [Test]
+	    public void Should_be_able_to_get_configuration()
+	    {
+	        var configuration = SubscriptionSection.Configuration();
+
+	        Assert.AreEqual("System.Data.SqlClient", configuration.ProviderName);
+	        Assert.AreEqual(@"Data Source=.\sqlexpress;Initial Catalog=shuttle;Integrated Security=SSPI;", configuration.ConnectionString);
+	        Assert.IsFalse(configuration.IgnoreSubscribe);
+        }
+    }
 }
