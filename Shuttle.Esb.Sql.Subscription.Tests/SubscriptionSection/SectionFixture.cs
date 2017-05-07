@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection;
 using NUnit.Framework;
 using Shuttle.Core.Infrastructure;
 
@@ -25,7 +24,6 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
 			Assert.AreEqual("connection-string-name", section.ConnectionStringName);
 			Assert.AreEqual(SubscribeOption.Ensure, section.Subscribe);
-			Assert.AreEqual("MyTableName", section.TableName);
 		}
 
 	    [Test]

@@ -13,13 +13,6 @@ namespace Shuttle.Esb.Sql.Subscription
             get { return (string)this["connectionStringName"]; }
         }
 
-        [ConfigurationProperty("tableName", IsRequired = false,
-            DefaultValue = "SubscriberMessageType")]
-        public string TableName
-        {
-            get { return (string)this["tableName"]; }
-        }
-
         [ConfigurationProperty("subscribe", IsRequired = false, DefaultValue = SubscribeOption.Normal)]
         public SubscribeOption Subscribe
         {
