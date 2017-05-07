@@ -4,6 +4,6 @@ namespace Shuttle.Esb.Sql.Subscription
 	{
 		string ProviderName { get; }
 		string ConnectionString { get; }
-		bool IgnoreSubscribe { get; }
+		SubscribeOption Subscribe { get; }
 	}
 }

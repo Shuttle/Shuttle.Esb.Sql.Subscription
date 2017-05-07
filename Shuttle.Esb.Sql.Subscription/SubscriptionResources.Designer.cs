@@ -79,6 +79,24 @@ namespace Shuttle.Esb.Sql.Subscription {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Subscription to message type &apos;{0}&apos; is missing..
+        /// </summary>
+        internal static string MissingSubscription {
+            get {
+                return ResourceManager.GetString("MissingSubscription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following missing message type subscriptions have been logged: {0}.
+        /// </summary>
+        internal static string MissingSubscriptionException {
+            get {
+                return ResourceManager.GetString("MissingSubscriptionException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The provider name used by &apos;{0}&apos; is empty..
         /// </summary>
         internal static string ProviderNameEmpty {

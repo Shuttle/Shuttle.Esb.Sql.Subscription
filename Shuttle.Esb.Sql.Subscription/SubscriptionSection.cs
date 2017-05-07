@@ -4,50 +4,57 @@ using Shuttle.Core.Infrastructure;
 
 namespace Shuttle.Esb.Sql.Subscription
 {
-	public class SubscriptionSection : ConfigurationSection
-	{
-		[ConfigurationProperty("connectionStringName", IsRequired = false,
-			DefaultValue = "Subscription")]
-		public string ConnectionStringName
-		{
-			get { return (string) this["connectionStringName"]; }
-		}
+    public class SubscriptionSection : ConfigurationSection
+    {
+        [ConfigurationProperty("connectionStringName", IsRequired = false,
+            DefaultValue = "Subscription")]
+        public string ConnectionStringName
+        {
+            get { return (string)this["connectionStringName"]; }
+        }
 
-		[ConfigurationProperty("ignoreSubscribe", IsRequired = false, DefaultValue = false)]
-		public bool IgnoreSubscribe
-		{
-			get { return (bool) this["ignoreSubscribe"]; }
-		}
+        [ConfigurationProperty("tableName", IsRequired = false,
+            DefaultValue = "SubscriberMessageType")]
+        public string TableName
+        {
+            get { return (string)this["tableName"]; }
+        }
 
-		public static SubscriptionConfiguration Configuration()
-		{
-			var section = ConfigurationSectionProvider.Open<SubscriptionSection>("shuttle", "subscription");
-			var configuration = new SubscriptionConfiguration();
+        [ConfigurationProperty("subscribe", IsRequired = false, DefaultValue = SubscribeOption.Normal)]
+        public SubscribeOption Subscribe
+        {
+            get { return (SubscribeOption)this["subscribe"]; }
+        }
 
-			var connectionStringName = "Subscription";
+        public static SubscriptionConfiguration Configuration()
+        {
+            var section = ConfigurationSectionProvider.Open<SubscriptionSection>("shuttle", "subscription");
+            var configuration = new SubscriptionConfiguration();
 
-			if (section != null)
-			{
-				connectionStringName = section.ConnectionStringName;
-				configuration.IgnoreSubscribe = section.IgnoreSubscribe;
-			}
+            var connectionStringName = "Subscription";
 
-			configuration.ProviderName = GetSettings(connectionStringName).ProviderName;
-			configuration.ConnectionString = GetSettings(connectionStringName).ConnectionString;
+            if (section != null)
+            {
+                connectionStringName = section.ConnectionStringName;
+                configuration.Subscribe = section.Subscribe;
+            }
 
-			return configuration;
-		}
+            configuration.ProviderName = GetSettings(connectionStringName).ProviderName;
+            configuration.ConnectionString = GetSettings(connectionStringName).ConnectionString;
 
-		private static ConnectionStringSettings GetSettings(string connectionStringName)
-		{
-			var settings = ConfigurationManager.ConnectionStrings[connectionStringName];
+            return configuration;
+        }
 
-			if (settings == null)
-			{
-				throw new InvalidOperationException(string.Format(SubscriptionResources.ConnectionStringMissing, connectionStringName));
-			}
+        private static ConnectionStringSettings GetSettings(string connectionStringName)
+        {
+            var settings = ConfigurationManager.ConnectionStrings[connectionStringName];
 
-			return settings;
-		}
-	}
+            if (settings == null)
+            {
+                throw new InvalidOperationException(string.Format(SubscriptionResources.ConnectionStringMissing, connectionStringName));
+            }
+
+            return settings;
+        }
+    }
 }

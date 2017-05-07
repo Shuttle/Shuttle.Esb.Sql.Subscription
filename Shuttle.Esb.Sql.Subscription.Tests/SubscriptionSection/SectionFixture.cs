@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using NUnit.Framework;
 using Shuttle.Core.Infrastructure;
 
@@ -23,7 +24,16 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 			Assert.IsNotNull(section);
 
 			Assert.AreEqual("connection-string-name", section.ConnectionStringName);
-			Assert.IsFalse(section.IgnoreSubscribe);
+			Assert.AreEqual(SubscribeOption.Ensure, section.Subscribe);
+			Assert.AreEqual("MyTableName", section.TableName);
 		}
+
+	    [Test]
+	    public void Should_be_able_to_get_configuration()
+	    {
+	        var configuration = SubscriptionSection.Configuration();
+
+            Assert.IsNotNull(configuration);
+	    }
 	}
 }

@@ -6,5 +6,6 @@ namespace Shuttle.Esb.Sql.Subscription
 		public static readonly string SubscriptionManagerExists = "SubscriptionManagerExists";
 		public static readonly string SubscriptionManagerCreate = "SubscriptionManagerCreate";
 		public static readonly string SubscriptionManagerSubscribe = "SubscriptionManagerSubscribe";
+		public static readonly string SubscriptionManagerContains = "SubscriptionManagerContains";
 	}
 }

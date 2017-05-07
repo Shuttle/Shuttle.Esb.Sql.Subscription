@@ -125,6 +125,14 @@
     <value>Could not find a connection string with name '{0}'.</value>
     <comment>{0} = the name of the missing connection string</comment>
   </data>
+  <data name="MissingSubscription" xml:space="preserve">
+    <value>Subscription to message type '{0}' is missing.</value>
+    <comment>{0} = full type name of message</comment>
+  </data>
+  <data name="MissingSubscriptionException" xml:space="preserve">
+    <value>The following missing message type subscriptions have been logged: {0}</value>
+    <comment>{0} = list of message types</comment>
+  </data>
   <data name="ProviderNameEmpty" xml:space="preserve">
     <value>The provider name used by '{0}' is empty.</value>
     <comment>{0} = name of component requiring the provider name</comment>
