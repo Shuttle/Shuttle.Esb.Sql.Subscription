@@ -1,0 +1,1 @@
+select (exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'subscriber_message_type'))::int
