@@ -145,6 +145,17 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerContains.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerCreate.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerExists.sql" />
+    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerInboxWorkQueueUris.sql" />
+    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerSubscribe.sql" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
