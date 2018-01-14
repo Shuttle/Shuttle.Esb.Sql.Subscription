@@ -1,4 +1,5 @@
-﻿using Shuttle.Core.Infrastructure;
+﻿using Shuttle.Core.Container;
+using Shuttle.Core.Contract;
 
 namespace Shuttle.Esb.Sql.Subscription
 {
@@ -11,7 +12,7 @@ namespace Shuttle.Esb.Sql.Subscription
 			registry.AttemptRegister<IScriptProviderConfiguration, ScriptProviderConfiguration>();
 			registry.AttemptRegister<IScriptProvider, ScriptProvider>();
 
-			registry.AttemptRegister<ISubscriptionConfiguration>(SubscriptionSection.Configuration());
+			registry.AttemptRegisterInstance<ISubscriptionConfiguration>(SubscriptionSection.Configuration());
 			registry.AttemptRegister<ISubscriptionManager, SubscriptionManager>();
 		}
 	}

@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Configuration;
-using Shuttle.Core.Infrastructure;
+using Shuttle.Core.Configuration;
 
 namespace Shuttle.Esb.Sql.Subscription
 {
     public class SubscriptionSection : ConfigurationSection
     {
-        [ConfigurationProperty("connectionStringName", IsRequired = false,
-            DefaultValue = "Subscription")]
-        public string ConnectionStringName
-        {
-            get { return (string)this["connectionStringName"]; }
-        }
+        [ConfigurationProperty("connectionStringName", IsRequired = false, DefaultValue = "Subscription")]
+        public string ConnectionStringName => (string) this["connectionStringName"];
 
         [ConfigurationProperty("subscribe", IsRequired = false, DefaultValue = SubscribeOption.Normal)]
-        public SubscribeOption Subscribe
-        {
-            get { return (SubscribeOption)this["subscribe"]; }
-        }
+        public SubscribeOption Subscribe => (SubscribeOption) this["subscribe"];
 
         public static SubscriptionConfiguration Configuration()
         {
@@ -44,7 +37,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
             if (settings == null)
             {
-                throw new InvalidOperationException(string.Format(SubscriptionResources.ConnectionStringMissing, connectionStringName));
+                throw new InvalidOperationException(string.Format(Resources.ConnectionStringMissing, connectionStringName));
             }
 
             return settings;

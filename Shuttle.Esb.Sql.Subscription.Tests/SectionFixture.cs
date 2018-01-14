@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using Shuttle.Core.Infrastructure;
+using Shuttle.Core.Configuration;
 
 namespace Shuttle.Esb.Sql.Subscription.Tests
 {
@@ -10,7 +10,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 	{
 		protected SubscriptionSection GetSection(string file)
 		{
-			return ConfigurationSectionProvider.OpenFile<SubscriptionSection>("shuttle", "subscription", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(@".\SubscriptionSection\files\{0}", file)));
+			return ConfigurationSectionProvider.OpenFile<SubscriptionSection>("shuttle", "subscription", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(@".\files\{0}", file)));
 		}
 
 		[Test]

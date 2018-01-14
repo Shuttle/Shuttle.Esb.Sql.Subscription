@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
+using Shuttle.Core.Contract;
 using Shuttle.Core.Data;
-using Shuttle.Core.Infrastructure;
+using Shuttle.Core.Logging;
 
 namespace Shuttle.Esb.Sql.Subscription
 {
@@ -54,7 +55,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
             if (string.IsNullOrEmpty(_subscriptionProviderName))
             {
-                throw new ConfigurationErrorsException(string.Format(SubscriptionResources.ProviderNameEmpty,
+                throw new ConfigurationErrorsException(string.Format(Resources.ProviderNameEmpty,
                     "SubscriptionManager"));
             }
 
@@ -62,7 +63,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
             if (string.IsNullOrEmpty(_subscriptionConnectionString))
             {
-                throw new ConfigurationErrorsException(string.Format(SubscriptionResources.ConnectionStringEmpty,
+                throw new ConfigurationErrorsException(string.Format(Resources.ConnectionStringEmpty,
                     "SubscriptionManager"));
             }
 
@@ -86,7 +87,7 @@ namespace Shuttle.Esb.Sql.Subscription
                                 "There is already an object named 'SubscriberMessageType' in the database.",
                                 StringComparison.OrdinalIgnoreCase))
                         {
-                            throw new DataException(SubscriptionResources.SubscriptionManagerCreateException, ex);
+                            throw new DataException(Resources.SubscriptionManagerCreateException, ex);
                         }
                     }
                 }
@@ -118,7 +119,7 @@ namespace Shuttle.Esb.Sql.Subscription
                 ||
                 _serviceBusConfiguration.Inbox.WorkQueue == null)
             {
-                throw new InvalidOperationException(EsbResources.SubscribeWithNoInboxException);
+                throw new InvalidOperationException(Esb.Resources.SubscribeWithNoInboxException);
             }
 
             var missingMessageTypes = new List<string>();
@@ -158,10 +159,10 @@ namespace Shuttle.Esb.Sql.Subscription
 
             foreach (var messageType in missingMessageTypes)
             {
-                _log.Error(string.Format(SubscriptionResources.MissingSubscription, messageType));
+                _log.Error(string.Format(Resources.MissingSubscription, messageType));
             }
 
-            throw new ApplicationException(string.Format(SubscriptionResources.MissingSubscriptionException, string.Join(",", missingMessageTypes)));
+            throw new ApplicationException(string.Format(Resources.MissingSubscriptionException, string.Join(",", missingMessageTypes)));
         }
 
         public void Subscribe(string messageTypeFullName)

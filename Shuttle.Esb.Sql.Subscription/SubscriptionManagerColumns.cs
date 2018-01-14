@@ -5,9 +5,7 @@ namespace Shuttle.Esb.Sql.Subscription
 {
 	public class SubscriptionManagerColumns
 	{
-		public static MappedColumn<string> InboxWorkQueueUri = new MappedColumn<string>("InboxWorkQueueUri", DbType.AnsiString,
-			265);
-
+		public static MappedColumn<string> InboxWorkQueueUri = new MappedColumn<string>("InboxWorkQueueUri", DbType.AnsiString, 265);
 		public static MappedColumn<string> MessageType = new MappedColumn<string>("MessageType", DbType.AnsiString, 265);
 	}
 }

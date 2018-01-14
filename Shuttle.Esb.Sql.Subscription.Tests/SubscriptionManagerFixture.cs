@@ -3,7 +3,7 @@ using System.Linq;
 using Moq;
 using NUnit.Framework;
 using Shuttle.Core.Data;
-using Shuttle.Core.Infrastructure;
+using Shuttle.Core.Pipelines;
 
 namespace Shuttle.Esb.Sql.Subscription.Tests
 {
