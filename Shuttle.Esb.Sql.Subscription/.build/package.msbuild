@@ -1,68 +1,78 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Deploy" ToolsVersion="15">
-	<PropertyGroup>
-		<DeploymentFolder>deployment</DeploymentFolder>
-		<PackageName>Shuttle.Esb.Sql.Subscription</PackageName>
+  <PropertyGroup>
+    <DeploymentFolder>deployment</DeploymentFolder>
+    <PackageName>Shuttle.Esb.Sql.Subscription</PackageName>
     <PackageSource Condition="$(PackageSource) == ''">https://www.nuget.org</PackageSource>
-	</PropertyGroup>
+  </PropertyGroup>
 
-	<Import Project="Shuttle.MSBuild.targets" />
+  <Import Project="Shuttle.MSBuild.targets" />
 
-	<ItemGroup>
-		<ProjectReference Include="..\$(PackageName).csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\$(PackageName).csproj" />
+  </ItemGroup>
 
-	<Target Name="Build">
-		<MSBuild Projects="@(ProjectReference)" Targets="Rebuild" Properties="Configuration=Debug;Platform=AnyCPU"/>
-		<MSBuild Projects="@(ProjectReference)" Targets="Rebuild" Properties="Configuration=Release;Platform=AnyCPU"/>
-	</Target>
+  <Target Name="Build">
+    <MSBuild Projects="@(ProjectReference)" Targets="Rebuild" Properties="Configuration=Debug;Platform=AnyCPU" />
+    <MSBuild Projects="@(ProjectReference)" Targets="Rebuild" Properties="Configuration=Release;Platform=AnyCPU" />
+  </Target>
 
-	<Target Name="SemanticVersion">
-		<Prompt Text="Enter semantic version:" Condition="$(SemanticVersion) == ''">
-			<Output TaskParameter="UserInput" PropertyName="SemanticVersion" />
-		</Prompt>
+  <Target Name="SemanticVersion">
+    <Prompt Text="Enter semantic version:" Condition="$(SemanticVersion) == ''">
+      <Output TaskParameter="UserInput" PropertyName="SemanticVersion" />
+    </Prompt>
 
-		<Error Text="Please enter a version number." Condition="$(SemanticVersion) == ''" />
+    <Error Text="Please enter a version number." Condition="$(SemanticVersion) == ''" />
 
-		<ItemGroup>
-			<AssemblyInfoFiles Include="..\Properties\AssemblyInfo.cs" />
-		</ItemGroup>
+    <ItemGroup>
+      <AssemblyInfoFiles Include="..\Properties\AssemblyInfo.cs" />
+    </ItemGroup>
 
-		<RegexFindAndReplace Files="@(AssemblyInfoFiles)" FindExpression="AssemblyInformationalVersion\s*\(\s*&quot;.*&quot;\s*\)" ReplacementText="AssemblyInformationalVersion(&quot;$(SemanticVersion)&quot;)" />
-		<RegexFindAndReplace Files="@(AssemblyInfoFiles)" FindExpression="AssemblyVersion\s*\(\s*&quot;.*&quot;\s*\)" ReplacementText="AssemblyVersion(&quot;$(SemanticVersion).0&quot;)" />
-	</Target>
+    <RegexFindAndReplace Files="@(AssemblyInfoFiles)"
+                         FindExpression="AssemblyInformationalVersion\s*\(\s*&quot;.*&quot;\s*\)"
+                         ReplacementText="AssemblyInformationalVersion(&quot;$(SemanticVersion)&quot;)" />
+    <RegexFindAndReplace Files="@(AssemblyInfoFiles)" FindExpression="AssemblyVersion\s*\(\s*&quot;.*&quot;\s*\)"
+                         ReplacementText="AssemblyVersion(&quot;$(SemanticVersion).0&quot;)" />
+  </Target>
 
-	<Target Name="Deploy" DependsOnTargets="SemanticVersion">
-		<MSBuild
-				Projects="$(MSBuildProjectFile)"
-				Targets="Package"
-				Properties="SemanticVersion=$(SemanticVersion)"
-        />
+  <Target Name="Deploy" DependsOnTargets="SemanticVersion">
+    <MSBuild
+      Projects="$(MSBuildProjectFile)"
+      Targets="Package"
+      Properties="SemanticVersion=$(SemanticVersion)" />
 
-		<Exec Command="nuget push $(DeploymentFolder)\nuget\$(PackageName).$(SemanticVersion).nupkg -source $(PackageSource)" />
-		<Exec Command="git commit -a -m &quot;- v$(SemanticVersion)&quot;" />
-		<Exec Command="git push" />
-	</Target>
+    <Exec
+      Command="nuget push $(DeploymentFolder)\nuget\$(PackageName).$(SemanticVersion).nupkg -source $(PackageSource)" />
+    <Exec Command="git commit -a -m &quot;- v$(SemanticVersion)&quot;" />
+    <Exec Command="git push" />
+  </Target>
 
-	<Target Name="Package" DependsOnTargets="SemanticVersion;Build">
-		<ItemGroup>
-			<NugetBinaries Include="..\bin\debug\**\$(PackageName).dll" />
-		</ItemGroup>
+  <Target Name="Package" DependsOnTargets="SemanticVersion;Build">
+    <ItemGroup>
+      <NugetBinaries Include="..\bin\debug\**\$(PackageName).dll" />
+      <Scripts Include="..\.scripts\**\SubscriptionManagerCreate.sql" />
+    </ItemGroup>
 
-		<Copy SourceFiles="package.nuspec" DestinationFolder="$(DeploymentFolder)\nuget\" SkipUnchangedFiles="false" />
-		<Copy SourceFiles="@(NugetBinaries)" DestinationFolder="$(DeploymentFolder)\nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="package.nuspec" DestinationFolder="$(DeploymentFolder)\nuget\" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(NugetBinaries)" DestinationFolder="$(DeploymentFolder)\nuget\lib\%(RecursiveDir)"
+          SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(Scripts)"
+          DestinationFolder="$(DeploymentFolder)\nuget\scripts\%(RecursiveDir)" SkipUnchangedFiles="false" />
 
-		<RegexFindAndReplace Files="$(DeploymentFolder)\nuget\package.nuspec" FindExpression="\{semver\}" ReplacementText="$(SemanticVersion)" />
-		<RegexFindAndReplace Files="$(DeploymentFolder)\nuget\package.nuspec" FindExpression="\{year\}" ReplacementText="$([System.DateTime]::Now.ToString(`yyyy`))" />
-		<SetNugetPackageVersions Files="$(DeploymentFolder)\nuget\package.nuspec" ProjectFile="..\$(PackageName).csproj" />
+    <RegexFindAndReplace Files="$(DeploymentFolder)\nuget\package.nuspec" FindExpression="\{semver\}"
+                         ReplacementText="$(SemanticVersion)" />
+    <RegexFindAndReplace Files="$(DeploymentFolder)\nuget\package.nuspec" FindExpression="\{year\}"
+                         ReplacementText="$([System.DateTime]::Now.ToString(`yyyy`))" />
+    <SetNugetPackageVersions Files="$(DeploymentFolder)\nuget\package.nuspec" ProjectFile="..\$(PackageName).csproj" />
 
-		<Exec Command="nuget pack $(DeploymentFolder)\nuget\package.nuspec -OutputDirectory $(DeploymentFolder)\nuget -NoPackageAnalysis" />
+    <Exec
+      Command="nuget pack $(DeploymentFolder)\nuget\package.nuspec -OutputDirectory $(DeploymentFolder)\nuget -NoPackageAnalysis" />
 
-		<MakeDir Directories="$(NugetPackageSourceFolder)" Condition="$(NugetPackageSourceFolder) != ''" />
+    <MakeDir Directories="$(NugetPackageSourceFolder)" Condition="$(NugetPackageSourceFolder) != ''" />
 
-		<Copy
-		  SourceFiles="$(DeploymentFolder)\nuget\$(PackageName).$(SemanticVersion).nupkg"
-		  DestinationFolder="$(NugetPackageSourceFolder)"
-		  SkipUnchangedFiles="false"
-		  Condition="$(NugetPackageSourceFolder) != ''" />
-	</Target>
+    <Copy
+      SourceFiles="$(DeploymentFolder)\nuget\$(PackageName).$(SemanticVersion).nupkg"
+      DestinationFolder="$(NugetPackageSourceFolder)"
+      SkipUnchangedFiles="false"
+      Condition="$(NugetPackageSourceFolder) != ''" />
+  </Target>
 </Project>

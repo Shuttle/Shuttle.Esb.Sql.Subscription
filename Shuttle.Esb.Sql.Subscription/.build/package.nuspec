@@ -38,4 +38,8 @@
       </group>
     </dependencies>
   </metadata>
+  <files>
+    <file src="scripts\**\*.sql" target="scripts" />
+    <file src="lib\**\*.*" target="lib" />
+  </files>
 </package>

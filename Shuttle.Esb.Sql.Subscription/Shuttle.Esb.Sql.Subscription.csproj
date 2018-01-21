@@ -11,12 +11,16 @@
         <None Include=".build\Shuttle.MSBuild.dll" />
         <None Include=".build\Shuttle.MSBuild.targets" />
         <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerContains.sql" />
-        <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerCreate.sql" />
+        <None Include=".scripts\Npgsql\SubscriptionManagerCreate.sql">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
         <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerExists.sql" />
         <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerInboxWorkQueueUris.sql" />
         <EmbeddedResource Include=".scripts\Npgsql\SubscriptionManagerSubscribe.sql" />
         <EmbeddedResource Include=".scripts\System.Data.SqlClient\SubscriptionManagerContains.sql" />
-        <EmbeddedResource Include=".scripts\System.Data.SqlClient\SubscriptionManagerCreate.sql" />
+        <None Include=".scripts\System.Data.SqlClient\SubscriptionManagerCreate.sql">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
         <EmbeddedResource Include=".scripts\System.Data.SqlClient\SubscriptionManagerExists.sql" />
         <EmbeddedResource Include=".scripts\System.Data.SqlClient\SubscriptionManagerInboxWorkQueueUris.sql" />
         <EmbeddedResource Include=".scripts\System.Data.SqlClient\SubscriptionManagerSubscribe.sql" />
