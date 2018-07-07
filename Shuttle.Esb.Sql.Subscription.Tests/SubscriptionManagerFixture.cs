@@ -67,7 +67,13 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
                     WorkQueue = workQueue.Object
                 }
             };
-            var subscriptionConfiguration = SubscriptionSection.Configuration();
+
+            var subscriptionConfiguration = new SubscriptionConfiguration
+            {
+                ConnectionString = "Data Source=.\\sqlexpress;Initial Catalog=shuttle;Integrated Security=SSPI;",
+                ProviderName = "System.Data.SqlClient",
+                Subscribe = subscribe
+            };
 
             subscriptionConfiguration.Subscribe = subscribe;
 

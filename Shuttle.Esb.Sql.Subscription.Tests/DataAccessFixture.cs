@@ -1,7 +1,7 @@
 ﻿using Moq;
 using NUnit.Framework;
 using Shuttle.Core.Data;
-#if (NETCOREAPP2_0 || NETSTANDARD2_0)
+#if (NETCOREAPP2_0 || NETCOREAPP2_1 || NETSTANDARD2_0)
 using Shuttle.Core.Data.SqlClient;
 #endif
 
@@ -13,7 +13,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
         [OneTimeSetUp]
         public void GlobalSetup()
         {
-#if (!NETCOREAPP2_0 && !NETSTANDARD2_0)
+#if (!NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0)
             DatabaseContextFactory = new DatabaseContextFactory(
                 new ConnectionConfigurationProvider(),
                 new DbConnectionFactory(), 
@@ -24,7 +24,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
             connectionConfigurationProvider.Setup(m => m.Get(It.IsAny<string>())).Returns(
                 new ConnectionConfiguration(
-                    "Shuttle",
+                    "Subscription",
                     "System.Data.SqlClient",
                     "Data Source=.\\sqlexpress;Initial Catalog=shuttle;Integrated Security=SSPI;"));
 

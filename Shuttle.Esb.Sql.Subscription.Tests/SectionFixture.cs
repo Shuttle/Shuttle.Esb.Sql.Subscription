@@ -25,13 +25,5 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 			Assert.AreEqual("connection-string-name", section.ConnectionStringName);
 			Assert.AreEqual(SubscribeOption.Ensure, section.Subscribe);
 		}
-
-	    [Test]
-	    public void Should_be_able_to_get_configuration()
-	    {
-	        var configuration = SubscriptionSection.Configuration();
-
-            Assert.IsNotNull(configuration);
-	    }
 	}
 }
