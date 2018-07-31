@@ -189,7 +189,7 @@ namespace Shuttle.Esb.Sql.Subscription
         {
             Guard.AgainstNull(message, "message");
 
-            var messageType = message.GetType().FullName;
+            var messageType = message.GetType().FullName ?? string.Empty;
 
             if (!_subscribers.ContainsKey(messageType))
             {
