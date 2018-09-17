@@ -18,6 +18,8 @@ namespace Shuttle.Esb.Sql.Subscription
         private readonly IDatabaseGateway _databaseGateway;
 
         private readonly List<string> _deferredSubscriptions = new List<string>();
+
+        private readonly ILog _log;
         private readonly IScriptProvider _scriptProvider;
 
         private readonly IServiceBusConfiguration _serviceBusConfiguration;
@@ -27,8 +29,6 @@ namespace Shuttle.Esb.Sql.Subscription
         private readonly string _subscriptionProviderName;
 
         private bool _deferSubscribtions = true;
-
-        private readonly ILog _log;
 
         public SubscriptionManager(IServiceBusEvents events, IServiceBusConfiguration serviceBusConfiguration,
             ISubscriptionConfiguration configuration, IScriptProvider scriptProvider,
@@ -94,10 +94,7 @@ namespace Shuttle.Esb.Sql.Subscription
             }
         }
 
-        protected bool HasDeferredSubscriptions
-        {
-            get { return _deferredSubscriptions.Count > 0; }
-        }
+        protected bool HasDeferredSubscriptions => _deferredSubscriptions.Count > 0;
 
         public void Subscribe(IEnumerable<string> messageTypeFullNames)
         {
@@ -162,27 +159,8 @@ namespace Shuttle.Esb.Sql.Subscription
                 _log.Error(string.Format(Resources.MissingSubscription, messageType));
             }
 
-            throw new ApplicationException(string.Format(Resources.MissingSubscriptionException, string.Join(",", missingMessageTypes)));
-        }
-
-        public void Subscribe(string messageTypeFullName)
-        {
-            Subscribe(new[] {messageTypeFullName});
-        }
-
-        public void Subscribe(IEnumerable<Type> messageTypes)
-        {
-            Subscribe(messageTypes.Select(messageType => messageType.FullName).ToList());
-        }
-
-        public void Subscribe(Type messageType)
-        {
-            Subscribe(new[] {messageType.FullName});
-        }
-
-        public void Subscribe<T>()
-        {
-            Subscribe(new[] {typeof(T).FullName});
+            throw new ApplicationException(string.Format(Resources.MissingSubscriptionException,
+                string.Join(",", missingMessageTypes)));
         }
 
         public IEnumerable<string> GetSubscribedUris(object message)

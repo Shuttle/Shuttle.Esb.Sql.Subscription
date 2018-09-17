@@ -106,6 +106,15 @@ namespace Shuttle.Esb.Sql.Subscription {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type &apos;{0}&apos; cannot be cast to a `Shuttle.Esb.Sql.Subscription.SubscriptionManager`..
+        /// </summary>
+        public static string SubscriptionManagerCastException {
+            get {
+                return ResourceManager.GetString("SubscriptionManagerCastException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The database has not been configured for subscription storage and the creation script could not be executed against your database.  The inner exception should provide the reason.  Please run the SubscriptionManagerCreate.sql script file against your database..
         /// </summary>
         public static string SubscriptionManagerCreateException {

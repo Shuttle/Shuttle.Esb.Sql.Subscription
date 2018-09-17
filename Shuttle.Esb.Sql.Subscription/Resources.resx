@@ -137,6 +137,10 @@
     <value>The provider name used by '{0}' is empty.</value>
     <comment>{0} = name of component requiring the provider name</comment>
   </data>
+  <data name="SubscriptionManagerCastException" xml:space="preserve">
+    <value>Type '{0}' cannot be cast to a `Shuttle.Esb.Sql.Subscription.SubscriptionManager`.</value>
+    <comment>{0} = ISubscriptionManager instance full type name</comment>
+  </data>
   <data name="SubscriptionManagerCreateException" xml:space="preserve">
     <value>The database has not been configured for subscription storage and the creation script could not be executed against your database.  The inner exception should provide the reason.  Please run the SubscriptionManagerCreate.sql script file against your database.</value>
   </data>
