@@ -98,6 +98,11 @@ namespace Shuttle.Esb.Sql.Subscription
 
         public void Subscribe(IEnumerable<string> messageTypeFullNames)
         {
+            Subscribe(_subscriptionProviderName, _subscriptionConnectionString, messageTypeFullNames);
+        }
+
+        public void Subscribe(string providerName, string connectionString, IEnumerable<string> messageTypeFullNames)
+        {
             Guard.AgainstNull(messageTypeFullNames, "messageTypeFullNames");
 
             if (_deferSubscribtions)
@@ -121,7 +126,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
             var missingMessageTypes = new List<string>();
 
-            using (_databaseContextFactory.Create(_subscriptionProviderName, _subscriptionConnectionString))
+            using (_databaseContextFactory.Create(providerName, connectionString))
             {
                 foreach (var messageType in messageTypeFullNames)
                 {

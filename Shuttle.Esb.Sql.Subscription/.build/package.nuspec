@@ -14,7 +14,7 @@
     <description>Sql-based implementation of ISubscriptionManager interface for use with Shuttle.Esb.</description>
     <releaseNotes />
     <copyright>Copyright (c) {year}, Eben Roux</copyright>
-    <tags>shuttle isubscriptionmanager</tags>
+    <tags>shuttle subscriptionmanager</tags>
     <dependencies>
       <group>
         <dependency id="Shuttle.Core.Configuration" version="{Shuttle.Core.Configuration-version}" />

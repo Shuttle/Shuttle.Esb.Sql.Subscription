@@ -11,11 +11,12 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
     public class SubscriptionManagerFixture : DataAccessFixture
     {
         private const string WorkQueueUri = "queue://./work";
+        private const string ProviderName = "System.Data.SqlClient";
+        private const string ConnectionString = "server=.\\sqlexpress;database=shuttle;Integrated Security=sspi;";
 
-        [SetUp]
-        public void SetUp()
+        public void ClearSubscriptions()
         {
-            using (DatabaseContextFactory.Create())
+            using (DatabaseContextFactory.Create(ProviderName, ConnectionString))
             {
                 DatabaseGateway.ExecuteUsing(RawQuery.Create("delete from SubscriberMessageType"));
             }
@@ -24,34 +25,97 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
         [Test]
         public void Should_be_able_subscribe_normally()
         {
-            var subscriptionManager = GetSubscriptionManager(SubscribeOption.Normal);
+            using (TransactionScopeFactory.Create())
+            {
+                ClearSubscriptions();
 
-            subscriptionManager.Subscribe<MessageTypeOne>();
+                var subscriptionManager = GetSubscriptionManager(SubscribeOption.Normal);
 
-            var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
+                subscriptionManager.Subscribe<MessageTypeOne>();
 
-            Assert.AreEqual(1, uris.Count);
-            Assert.AreEqual(WorkQueueUri, uris.ElementAt(0));
+                var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
+
+                Assert.AreEqual(1, uris.Count);
+                Assert.AreEqual(WorkQueueUri, uris.ElementAt(0));
+            }
         }
 
         [Test]
         public void Should_be_able_to_ignore_subscribe()
         {
-            var subscriptionManager = GetSubscriptionManager(SubscribeOption.Ignore);
+            using (TransactionScopeFactory.Create())
+            {
+                ClearSubscriptions();
 
-            subscriptionManager.Subscribe<MessageTypeOne>();
+                var subscriptionManager = GetSubscriptionManager(SubscribeOption.Ignore);
 
-            var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
+                subscriptionManager.Subscribe<MessageTypeOne>();
 
-            Assert.AreEqual(0, uris.Count);
+                var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
+
+                Assert.AreEqual(0, uris.Count);
+            }
         }
 
         [Test]
         public void Should_be_able_to_ensure_subscribe()
         {
-            var subscriptionManager = GetSubscriptionManager(SubscribeOption.Ensure);
+            using (TransactionScopeFactory.Create())
+            {
+                ClearSubscriptions();
 
-            Assert.Throws<ApplicationException>(() => subscriptionManager.Subscribe<MessageTypeOne>());
+                var subscriptionManager = GetSubscriptionManager(SubscribeOption.Ensure);
+
+                Assert.Throws<ApplicationException>(() => subscriptionManager.Subscribe<MessageTypeOne>());
+            }
+        }
+
+        [Test]
+        public void Should_be_able_subscribe_normally_using_specified_connection()
+        {
+            using (TransactionScopeFactory.Create())
+            {
+                ClearSubscriptions();
+
+                var subscriptionManager = GetSubscriptionManager(SubscribeOption.Normal);
+
+                subscriptionManager.Subscribe<MessageTypeOne>(ProviderName, ConnectionString);
+
+                var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
+
+                Assert.AreEqual(1, uris.Count);
+                Assert.AreEqual(WorkQueueUri, uris.ElementAt(0));
+            }
+        }
+
+        [Test]
+        public void Should_be_able_to_ignore_subscribe_using_specified_connection()
+        {
+            using (TransactionScopeFactory.Create())
+            {
+                ClearSubscriptions();
+
+                var subscriptionManager = GetSubscriptionManager(SubscribeOption.Ignore);
+
+                subscriptionManager.Subscribe<MessageTypeOne>(ProviderName, ConnectionString);
+
+                var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
+
+                Assert.AreEqual(0, uris.Count);
+            }
+        }
+
+        [Test]
+        public void Should_be_able_to_ensure_subscribe_using_specified_connection()
+        {
+            using (TransactionScopeFactory.Create())
+            {
+                ClearSubscriptions();
+
+                var subscriptionManager = GetSubscriptionManager(SubscribeOption.Ensure);
+
+                Assert.Throws<ApplicationException>(() => subscriptionManager.Subscribe<MessageTypeOne>(ProviderName, ConnectionString));
+            }
         }
 
         private SubscriptionManager GetSubscriptionManager(SubscribeOption subscribe)
@@ -70,8 +134,8 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
             var subscriptionConfiguration = new SubscriptionConfiguration
             {
-                ConnectionString = "Data Source=.\\sqlexpress;Initial Catalog=shuttle;Integrated Security=SSPI;",
-                ProviderName = "System.Data.SqlClient",
+                ConnectionString = ConnectionString,
+                ProviderName = ProviderName,
                 Subscribe = subscribe
             };
 
