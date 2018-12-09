@@ -30,7 +30,7 @@
         <dependency id="Shuttle.Esb" version="{Shuttle.Esb-version}" />
       </group>
 
-      <group targetFramework="netcoreapp2.0">
+      <group targetFramework="netcoreapp2.1">
         <dependency id="System.Configuration.ConfigurationManager"
                     version="{System.Configuration.ConfigurationManager-version}" />
         <dependency id="Shuttle.Core.Configuration" version="{Shuttle.Core.Configuration-version}" />
