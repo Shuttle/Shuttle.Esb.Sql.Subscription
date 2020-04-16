@@ -25,14 +25,6 @@ namespace Shuttle.Esb.Sql.Subscription
                 configuration.Subscribe = section.Subscribe;
             }
 
-            configuration.ProviderName = GetSettings(connectionStringName).ProviderName;
-            configuration.ConnectionString = GetSettings(connectionStringName).ConnectionString;
-
-            return configuration;
-        }
-
-        private static ConnectionStringSettings GetSettings(string connectionStringName)
-        {
             var settings = ConfigurationManager.ConnectionStrings[connectionStringName];
 
             if (settings == null)
@@ -40,7 +32,10 @@ namespace Shuttle.Esb.Sql.Subscription
                 throw new InvalidOperationException(string.Format(Resources.ConnectionStringMissing, connectionStringName));
             }
 
-            return settings;
+            configuration.ProviderName = settings.ProviderName;
+            configuration.ConnectionString = settings.ConnectionString;
+
+            return configuration;
         }
     }
 }

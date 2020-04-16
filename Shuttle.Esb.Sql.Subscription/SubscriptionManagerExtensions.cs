@@ -32,6 +32,31 @@ namespace Shuttle.Esb.Sql.Subscription
             GuardedSubscriptionManager(subscriptionManager).Subscribe(new[] { typeof(T).FullName });
         }
 
+        public static void Subscribe(this ISubscriptionManager subscriptionManager, string connectionStringName, IEnumerable<string> messageTypeFullNames)
+        {
+            GuardedSubscriptionManager(subscriptionManager).Subscribe(connectionStringName, messageTypeFullNames);
+        }
+
+        public static void Subscribe(this ISubscriptionManager subscriptionManager, string connectionStringName, string messageTypeFullName)
+        {
+            GuardedSubscriptionManager(subscriptionManager).Subscribe(connectionStringName, new[] { messageTypeFullName });
+        }
+
+        public static void Subscribe(this ISubscriptionManager subscriptionManager, string connectionStringName, IEnumerable<Type> messageTypes)
+        {
+            GuardedSubscriptionManager(subscriptionManager).Subscribe(connectionStringName, messageTypes.Select(messageType => messageType.FullName).ToList());
+        }
+
+        public static void Subscribe(this ISubscriptionManager subscriptionManager, string connectionStringName, Type messageType)
+        {
+            GuardedSubscriptionManager(subscriptionManager).Subscribe(connectionStringName, new[] { messageType.FullName });
+        }
+
+        public static void Subscribe<T>(this ISubscriptionManager subscriptionManager, string connectionStringName)
+        {
+            GuardedSubscriptionManager(subscriptionManager).Subscribe(connectionStringName, new[] { typeof(T).FullName });
+        }
+
         public static void Subscribe(this ISubscriptionManager subscriptionManager, string providerName, string connectionString, IEnumerable<string> messageTypeFullNames)
         {
             GuardedSubscriptionManager(subscriptionManager).Subscribe(providerName, connectionString, messageTypeFullNames);

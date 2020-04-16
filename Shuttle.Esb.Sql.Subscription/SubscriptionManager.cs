@@ -101,6 +101,18 @@ namespace Shuttle.Esb.Sql.Subscription
             Subscribe(_subscriptionProviderName, _subscriptionConnectionString, messageTypeFullNames);
         }
 
+        public void Subscribe(string connectionStringName, IEnumerable<string> messageTypeFullNames)
+        {
+            var settings = ConfigurationManager.ConnectionStrings[connectionStringName];
+
+            if (settings == null)
+            {
+                throw new InvalidOperationException(string.Format(Resources.ConnectionStringMissing, connectionStringName));
+            }
+
+            Subscribe(settings.ProviderName, settings.ConnectionString, messageTypeFullNames);
+        }
+
         public void Subscribe(string providerName, string connectionString, IEnumerable<string> messageTypeFullNames)
         {
             Guard.AgainstNull(messageTypeFullNames, "messageTypeFullNames");
