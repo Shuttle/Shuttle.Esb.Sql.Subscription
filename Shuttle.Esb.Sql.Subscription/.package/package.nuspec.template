@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+
+<package>
+	<metadata>
+		<id>Shuttle.Esb.Sql.Subscription</id>
+		<version>#{SemanticVersion}#</version>
+		<authors>Eben Roux</authors>
+		<owners>Eben Roux</owners>
+		<license type="expression">BSD-3-Clause</license>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<icon>images\logo.png</icon>
+		<repository type="git" url="https://github.com/Shuttle/Shuttle.Esb.Sql.Subscription.git" />
+		<projectUrl>https://github.com/Shuttle/Shuttle.Esb.Sql.Subscription</projectUrl>
+		<description>Sql-based implementation of ISubscriptionManager interface for use with Shuttle.Esb.</description>
+		<copyright>Copyright (c) #{Year}#, Eben Roux</copyright>
+		<tags>subscriptionmanager pubsub</tags>
+		<dependencies>
+#{Dependencies}#
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="..\..\..\.media\logo.png" target="images" />
+		<file src="lib\**\*.*" target="lib" />
+    <file src="scripts\**\*.sql" target="scripts" />
+	</files>
+</package>
