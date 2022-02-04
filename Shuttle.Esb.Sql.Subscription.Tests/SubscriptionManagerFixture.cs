@@ -12,7 +12,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
     {
         private const string WorkQueueUri = "queue://./work";
         private const string ProviderName = "System.Data.SqlClient";
-        private const string ConnectionString = "server=.\\sqlexpress;database=shuttle;Integrated Security=sspi;";
+        private const string ConnectionString = "server=.;database=shuttle;user id=sa;password=Pass!000";
 
         public void ClearSubscriptions()
         {

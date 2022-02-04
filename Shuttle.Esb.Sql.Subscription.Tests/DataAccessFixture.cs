@@ -1,13 +1,11 @@
 ﻿using System;
+using System.Data.Common;
+using System.Data.SqlClient;
 using System.Transactions;
 using Moq;
 using NUnit.Framework;
 using Shuttle.Core.Data;
 using Shuttle.Core.Transactions;
-#if NETCOREAPP
-using System.Data.Common;
-using System.Data.SqlClient;
-#endif
 
 namespace Shuttle.Esb.Sql.Subscription.Tests
 {
@@ -17,18 +15,15 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
         [OneTimeSetUp]
         public void GlobalSetup()
         {
-#if NETCOREAPP
             DbProviderFactories.RegisterFactory("System.Data.SqlClient", SqlClientFactory.Instance);
-#endif
-            
+
             var connectionConfigurationProvider = new Mock<IConnectionConfigurationProvider>();
 
             connectionConfigurationProvider.Setup(m => m.Get(It.IsAny<string>())).Returns(
                 new ConnectionConfiguration(
                     "Shuttle",
                     "System.Data.SqlClient",
-                    "server=.\\sqlexpress;database=shuttle;Integrated Security=sspi;"));
-
+                    "server=.;database=shuttle;user id=sa;password=Pass!000"));
 
             DatabaseContextFactory = new DatabaseContextFactory(
                 connectionConfigurationProvider.Object,

@@ -2,6 +2,10 @@
 
 Contains a sql-based `ISubscriptionManager` implementation.  The subscription manager caches all subscriptions forever so should a new subscriber be added be sure to restart the publisher endpoint service.
 
+# Registration
+
+The required components may be registered by calling `ComponentRegistryExtensions.RegisterSubscription(IComponentRegistry)`.
+
 # Supported providers
 
 Currently only the `System.Data.SqlClient` provider name is supported but this can easily be extended.  Feel free to give it a bash and please send a pull request if you *do* go this route.  You are welcome to create an issue and assistance will be provided where able.

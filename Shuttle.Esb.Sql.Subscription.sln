@@ -1,11 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32106.194
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shuttle.Esb.Sql.Subscription", "Shuttle.Esb.Sql.Subscription\Shuttle.Esb.Sql.Subscription.csproj", "{6ECE6E86-65C6-4CC4-A286-B7B2360A778F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shuttle.Esb.Sql.Subscription", "Shuttle.Esb.Sql.Subscription\Shuttle.Esb.Sql.Subscription.csproj", "{6ECE6E86-65C6-4CC4-A286-B7B2360A778F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shuttle.Esb.Sql.Subscription.Tests", "Shuttle.Esb.Sql.Subscription.Tests\Shuttle.Esb.Sql.Subscription.Tests.csproj", "{8D1A9452-BEE0-40CE-9259-1590D23C19D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shuttle.Esb.Sql.Subscription.Tests", "Shuttle.Esb.Sql.Subscription.Tests\Shuttle.Esb.Sql.Subscription.Tests.csproj", "{8D1A9452-BEE0-40CE-9259-1590D23C19D7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{28DE7A7D-DAB1-41EE-90AA-CA8A66F38950}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

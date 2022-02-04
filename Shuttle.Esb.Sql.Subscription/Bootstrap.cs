@@ -3,9 +3,9 @@ using Shuttle.Core.Contract;
 
 namespace Shuttle.Esb.Sql.Subscription
 {
-	public class Bootstrap : IComponentRegistryBootstrap
+	public static class ComponentRegistryExtensions
 	{
-		public void Register(IComponentRegistry registry)
+		public static void RegisterSubscription(this IComponentRegistry registry)
 		{
 			Guard.AgainstNull(registry, "registry");
 
