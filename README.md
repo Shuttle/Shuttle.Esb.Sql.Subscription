@@ -8,7 +8,11 @@ The required components may be registered by calling `ComponentRegistryExtension
 
 # Supported providers
 
-Currently only the `System.Data.SqlClient` provider name is supported but this can easily be extended.  Feel free to give it a bash and please send a pull request if you *do* go this route.  You are welcome to create an issue and assistance will be provided where able.
+- `Microsoft.Data.SqlClient`
+- `System.Data.SqlClient`
+- `Npgsql` / thanks to [hopla](https://github.com/hopla)
+
+If you'd like support for another SQL-based provider please feel free to give it a bash and send a pull request if you *do* go this route.  You are welcome to create an issue and assistance will be provided where possible.
 
 ## Configuration
 
