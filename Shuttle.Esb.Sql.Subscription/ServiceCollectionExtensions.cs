@@ -21,6 +21,8 @@ namespace Shuttle.Esb.Sql.Subscription
 
             services.AddOptions<SubscriptionOptions>().Configure(options =>
             {
+                options.ConnectionStringName = subscriptionBuilder.Options.ConnectionStringName;
+                options.SubscribeType = subscriptionBuilder.Options.SubscribeType;
             });
 
             return services;

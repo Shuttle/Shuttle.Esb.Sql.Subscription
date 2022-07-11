@@ -12,6 +12,6 @@
         public const string SectionName = "Shuttle:Subscription";
 
         public SubscribeType SubscribeType { get; set; }
-        public string ConnectionStringName { get; set; }
+        public string ConnectionStringName { get; set; } = "Subscription";
     }
 }
