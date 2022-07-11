@@ -1,34 +1,38 @@
-﻿using Shuttle.Core.Contract;
+﻿using Microsoft.Extensions.Options;
+using Shuttle.Core.Contract;
+using Shuttle.Core.Data;
 
 namespace Shuttle.Esb.Sql.Subscription
 {
-	public class ScriptProvider : IScriptProvider
-	{
-		private readonly Core.Data.IScriptProvider _scriptProvider;
+    public class ScriptProvider : IScriptProvider
+    {
+        private readonly Core.Data.IScriptProvider _scriptProvider;
 
-		public ScriptProvider(IScriptProviderConfiguration configuration)
-		{
-			Guard.AgainstNull(configuration, "configuration");
+        public ScriptProvider(IOptions<ScriptProviderOptions> options, IDatabaseContextCache databaseContextCache)
+        {
+            Guard.AgainstNull(options, nameof(options));
+            Guard.AgainstNull(options.Value, nameof(options.Value));
+            Guard.AgainstNull(databaseContextCache, nameof(databaseContextCache));
 
-			_scriptProvider = new Core.Data.ScriptProvider(new ScriptProviderConfiguration
-			{
-				ResourceNameFormat = string.IsNullOrEmpty(configuration.ResourceNameFormat)
-					? "Shuttle.Esb.Sql.Subscription..scripts.{ProviderName}.{ScriptName}.sql"
-					: configuration.ResourceNameFormat,
-				ResourceAssembly = configuration.ResourceAssembly ?? typeof(SubscriptionManager).Assembly,
-				FileNameFormat = configuration.FileNameFormat,
-				ScriptFolder = configuration.ScriptFolder
-			});
-		}
+            _scriptProvider = new Core.Data.ScriptProvider(Options.Create(new ScriptProviderOptions
+            {
+                ResourceNameFormat = string.IsNullOrEmpty(options.Value.ResourceNameFormat)
+                    ? "Shuttle.Esb.Sql.Subscription..scripts.{ProviderName}.{ScriptName}.sql"
+                    : options.Value.ResourceNameFormat,
+                ResourceAssembly = options.Value.ResourceAssembly ?? typeof(SubscriptionService).Assembly,
+                FileNameFormat = options.Value.FileNameFormat,
+                ScriptFolder = options.Value.ScriptFolder
+            }), databaseContextCache);
+        }
 
-		public string Get(string scriptName)
-		{
-			return _scriptProvider.Get(scriptName);
-		}
+        public string Get(string scriptName)
+        {
+            return _scriptProvider.Get(scriptName);
+        }
 
-		public string Get(string scriptName, params object[] parameters)
-		{
-			return _scriptProvider.Get(scriptName, parameters);
-		}
-	}
+        public string Get(string scriptName, params object[] parameters)
+        {
+            return _scriptProvider.Get(scriptName, parameters);
+        }
+    }
 }
