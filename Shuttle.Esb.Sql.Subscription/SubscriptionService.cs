@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Linq;
 using Microsoft.Extensions.Options;
@@ -13,26 +12,29 @@ namespace Shuttle.Esb.Sql.Subscription
     public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineObserver<OnStarted>
     {
         private static readonly object Padlock = new object();
+
+        private readonly IOptionsMonitor<ConnectionStringOptions> _connectionStringOptions;
         private readonly IDatabaseContextFactory _databaseContextFactory;
 
         private readonly IDatabaseGateway _databaseGateway;
 
         private readonly List<string> _deferredSubscriptions = new List<string>();
+        private readonly IPipelineFactory _pipelineFactory;
 
         private readonly IScriptProvider _scriptProvider;
-
-        private readonly IOptionsMonitor<ConnectionStringOptions> _connectionStringOptions;
         private readonly IServiceBusConfiguration _serviceBusConfiguration;
-        private readonly IPipelineFactory _pipelineFactory;
 
         private readonly Dictionary<string, List<string>> _subscribers = new Dictionary<string, List<string>>();
         private readonly string _subscriptionConnectionString;
+        private readonly SubscriptionOptions _subscriptionOptions;
         private readonly string _subscriptionProviderName;
 
         private bool _deferSubscriptions = true;
-        private readonly SubscriptionOptions _subscriptionOptions;
 
-        public SubscriptionService(IOptionsMonitor<ConnectionStringOptions> connectionStringOptions, IOptions<SubscriptionOptions> subscriptionOptions, IServiceBusConfiguration serviceBusConfiguration, IPipelineFactory pipelineFactory, IScriptProvider scriptProvider, IDatabaseContextFactory databaseContextFactory, IDatabaseGateway databaseGateway)
+        public SubscriptionService(IOptionsMonitor<ConnectionStringOptions> connectionStringOptions,
+            IOptions<SubscriptionOptions> subscriptionOptions, IServiceBusConfiguration serviceBusConfiguration,
+            IPipelineFactory pipelineFactory, IScriptProvider scriptProvider,
+            IDatabaseContextFactory databaseContextFactory, IDatabaseGateway databaseGateway)
         {
             Guard.AgainstNull(connectionStringOptions, nameof(connectionStringOptions));
             Guard.AgainstNull(subscriptionOptions, nameof(subscriptionOptions));
@@ -59,7 +61,8 @@ namespace Shuttle.Esb.Sql.Subscription
 
             if (connectionString == null)
             {
-                throw new InvalidOperationException(string.Format(Shuttle.Core.Data.Resources.ConnectionSettingsMissing, connectionStringName));
+                throw new InvalidOperationException(string.Format(Core.Data.Resources.ConnectionSettingsMissing,
+                    connectionStringName));
             }
 
             _subscriptionProviderName = connectionString.ProviderName;
@@ -92,6 +95,58 @@ namespace Shuttle.Esb.Sql.Subscription
             }
         }
 
+        protected bool HasDeferredSubscriptions => _deferredSubscriptions.Count > 0;
+
+        public void Dispose()
+        {
+            _pipelineFactory.PipelineCreated -= PipelineCreated;
+        }
+
+        public void Execute(OnStarted pipelineEvent)
+        {
+            Guard.AgainstNull(pipelineEvent, nameof(pipelineEvent));
+
+            _deferSubscriptions = false;
+
+            if (HasDeferredSubscriptions)
+            {
+                Subscribe(_deferredSubscriptions);
+            }
+        }
+
+        public IEnumerable<string> GetSubscribedUris(object message)
+        {
+            Guard.AgainstNull(message, "message");
+
+            var messageType = message.GetType().FullName ?? string.Empty;
+
+            if (!_subscribers.ContainsKey(messageType))
+            {
+                lock (Padlock)
+                {
+                    if (!_subscribers.ContainsKey(messageType))
+                    {
+                        DataTable table;
+
+                        using (_databaseContextFactory.Create(_subscriptionProviderName, _subscriptionConnectionString))
+                        {
+                            table = _databaseGateway.GetDataTable(
+                                RawQuery.Create(
+                                        _scriptProvider.Get(
+                                            Script.SubscriptionManagerInboxWorkQueueUris))
+                                    .AddParameterValue(Columns.MessageType, messageType));
+                        }
+
+                        _subscribers.Add(messageType, (from DataRow row in table.Rows
+                                select Columns.InboxWorkQueueUri.MapFrom(row))
+                            .ToList());
+                    }
+                }
+            }
+
+            return _subscribers[messageType];
+        }
+
         private void PipelineCreated(object sender, PipelineEventArgs e)
         {
             Guard.AgainstNull(sender, nameof(sender));
@@ -105,8 +160,6 @@ namespace Shuttle.Esb.Sql.Subscription
             e.Pipeline.RegisterObserver(this);
         }
 
-        protected bool HasDeferredSubscriptions => _deferredSubscriptions.Count > 0;
-
         public void Subscribe(IEnumerable<string> messageTypeFullNames)
         {
             Subscribe(_subscriptionProviderName, _subscriptionConnectionString, messageTypeFullNames);
@@ -118,7 +171,8 @@ namespace Shuttle.Esb.Sql.Subscription
 
             if (connectionString == null)
             {
-                throw new InvalidOperationException(string.Format(Shuttle.Core.Data.Resources.ConnectionSettingsMissing, connectionStringName));
+                throw new InvalidOperationException(string.Format(Core.Data.Resources.ConnectionSettingsMissing,
+                    connectionStringName));
             }
 
             Subscribe(connectionString.ProviderName, connectionString.ConnectionString, messageTypeFullNames);
@@ -184,56 +238,6 @@ namespace Shuttle.Esb.Sql.Subscription
 
             throw new ApplicationException(string.Format(Resources.MissingSubscriptionException,
                 string.Join(",", missingMessageTypes)));
-        }
-
-        public IEnumerable<string> GetSubscribedUris(object message)
-        {
-            Guard.AgainstNull(message, "message");
-
-            var messageType = message.GetType().FullName ?? string.Empty;
-
-            if (!_subscribers.ContainsKey(messageType))
-            {
-                lock (Padlock)
-                {
-                    if (!_subscribers.ContainsKey(messageType))
-                    {
-                        DataTable table;
-
-                        using (_databaseContextFactory.Create(_subscriptionProviderName, _subscriptionConnectionString))
-                        {
-                            table = _databaseGateway.GetDataTable(
-                                RawQuery.Create(
-                                        _scriptProvider.Get(
-                                            Script.SubscriptionManagerInboxWorkQueueUris))
-                                    .AddParameterValue(Columns.MessageType, messageType));
-                        }
-
-                        _subscribers.Add(messageType, (from DataRow row in table.Rows
-                                select Columns.InboxWorkQueueUri.MapFrom(row))
-                            .ToList());
-                    }
-                }
-            }
-
-            return _subscribers[messageType];
-        }
-
-        public void Dispose()
-        {
-            _pipelineFactory.PipelineCreated -= PipelineCreated;
-        }
-
-        public void Execute(OnStarted pipelineEvent)
-        {
-            Guard.AgainstNull(pipelineEvent, nameof(pipelineEvent));
-
-            _deferSubscriptions = false;
-
-            if (HasDeferredSubscriptions)
-            {
-                Subscribe(_deferredSubscriptions);
-            }
         }
     }
 }
