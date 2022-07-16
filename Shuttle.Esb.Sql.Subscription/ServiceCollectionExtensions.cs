@@ -7,7 +7,7 @@ namespace Shuttle.Esb.Sql.Subscription
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddSubscription(this IServiceCollection services,
+        public static IServiceCollection AddSqlSubscription(this IServiceCollection services,
             Action<SubscriptionBuilder> builder = null)
         {
             Guard.AgainstNull(services, nameof(services));
