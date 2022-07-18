@@ -17,7 +17,7 @@ namespace Shuttle.Esb.Sql.Subscription
             builder?.Invoke(subscriptionBuilder);
 
             services.TryAddSingleton<IScriptProvider, ScriptProvider>();
-            services.TryAddSingleton<ISubscriptionService, SubscriptionService>();
+            services.AddSingleton<ISubscriptionService, SubscriptionService>();
 
             services.AddOptions<SubscriptionOptions>().Configure(options =>
             {
