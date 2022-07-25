@@ -124,13 +124,19 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
             workQueue.Setup(m => m.Uri).Returns(new Uri(WorkQueueUri));
 
-            var serviceBusConfiguration = new ServiceBusConfiguration
+            var queueService = new Mock<IQueueService>();
+
+            queueService.Setup(m => m.Get(It.IsAny<string>())).Returns(workQueue.Object);
+
+            var serviceBusConfiguration = new ServiceBusConfiguration(queueService.Object);
+
+            serviceBusConfiguration.Configure(new ServiceBusOptions
             {
-                Inbox = new InboxConfiguration
+                Inbox = new InboxOptions
                 {
-                    WorkQueue = workQueue.Object
+                    WorkQueueUri = WorkQueueUri
                 }
-            };
+            });
 
             var connectionStringOptions = new Mock<IOptionsMonitor<ConnectionStringOptions>>();
 
@@ -150,7 +156,10 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
             var pipelineFactory = new Mock<IPipelineFactory>();
 
-            var subscriptionService = new SubscriptionService(connectionStringOptions.Object, subscriptionOptions, serviceBusConfiguration, pipelineFactory.Object, new ScriptProvider(scriptProviderOptions, DatabaseContextCache), DatabaseContextFactory, DatabaseGateway);
+            var subscriptionService = new SubscriptionService(connectionStringOptions.Object, subscriptionOptions,
+                serviceBusConfiguration, pipelineFactory.Object,
+                new ScriptProvider(scriptProviderOptions, DatabaseContextCache), DatabaseContextFactory,
+                DatabaseGateway);
 
             subscriptionService.Execute(new OnStarted());
 
