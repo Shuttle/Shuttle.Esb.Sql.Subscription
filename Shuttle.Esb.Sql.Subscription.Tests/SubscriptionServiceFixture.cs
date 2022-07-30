@@ -122,7 +122,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
         {
             var workQueue = new Mock<IQueue>();
 
-            workQueue.Setup(m => m.Uri).Returns(new Uri(WorkQueueUri));
+            workQueue.Setup(m => m.Uri).Returns(new QueueUri(WorkQueueUri));
 
             var queueService = new Mock<IQueueService>();
 
