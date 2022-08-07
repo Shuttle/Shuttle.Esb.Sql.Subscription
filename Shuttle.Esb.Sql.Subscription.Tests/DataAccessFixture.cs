@@ -35,7 +35,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
             DatabaseContextFactory = new DatabaseContextFactory(
                 ConnectionStringOptions,
                 new DbConnectionFactory(), 
-                new DbCommandFactory(Options.Create(new CommandOptions())), 
+                new DbCommandFactory(Options.Create(new DataAccessOptions())), 
                 new ThreadStaticDatabaseContextCache());
 
             DatabaseContextCache = new ThreadStaticDatabaseContextCache();

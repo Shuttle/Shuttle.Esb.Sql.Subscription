@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -28,9 +29,10 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
             {
                 ClearSubscriptions();
 
-                var subscriptionManager = GetSubscriptionService(SubscribeType.Normal);
-
-                subscriptionManager.Subscribe<MessageTypeOne>();
+                var subscriptionManager = ExerciseSubscriptionService(SubscribeType.Normal, new List<string>
+                {
+                    typeof(MessageTypeOne).FullName
+                });
 
                 var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
 
@@ -46,9 +48,10 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
             {
                 ClearSubscriptions();
 
-                var subscriptionManager = GetSubscriptionService(SubscribeType.Ignore);
-
-                subscriptionManager.Subscribe<MessageTypeOne>();
+                var subscriptionManager = ExerciseSubscriptionService(SubscribeType.Ignore, new List<string>
+                {
+                    typeof(MessageTypeOne).FullName
+                });
 
                 var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
 
@@ -63,62 +66,14 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
             {
                 ClearSubscriptions();
 
-                var subscriptionManager = GetSubscriptionService(SubscribeType.Ensure);
-
-                Assert.Throws<ApplicationException>(() => subscriptionManager.Subscribe<MessageTypeOne>());
+                Assert.Throws<ApplicationException>(() => ExerciseSubscriptionService(SubscribeType.Ensure, new List<string>
+                {
+                    typeof(MessageTypeOne).FullName
+                }));
             }
         }
 
-        [Test]
-        public void Should_be_able_subscribe_normally_using_specified_connection()
-        {
-            using (TransactionScopeFactory.Create())
-            {
-                ClearSubscriptions();
-
-                var subscriptionManager = GetSubscriptionService(SubscribeType.Normal);
-
-                subscriptionManager.Subscribe<MessageTypeOne>(ProviderName, ConnectionString);
-
-                var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
-
-                Assert.AreEqual(1, uris.Count);
-                Assert.AreEqual(WorkQueueUri, uris.ElementAt(0));
-            }
-        }
-
-        [Test]
-        public void Should_be_able_to_ignore_subscribe_using_specified_connection()
-        {
-            using (TransactionScopeFactory.Create())
-            {
-                ClearSubscriptions();
-
-                var subscriptionManager = GetSubscriptionService(SubscribeType.Ignore);
-
-                subscriptionManager.Subscribe<MessageTypeOne>(ProviderName, ConnectionString);
-
-                var uris = subscriptionManager.GetSubscribedUris(new MessageTypeOne()).ToList();
-
-                Assert.AreEqual(0, uris.Count);
-            }
-        }
-
-        [Test]
-        public void Should_be_able_to_ensure_subscribe_using_specified_connection()
-        {
-            using (TransactionScopeFactory.Create())
-            {
-                ClearSubscriptions();
-
-                var subscriptionManager = GetSubscriptionService(SubscribeType.Ensure);
-
-                Assert.Throws<ApplicationException>(() =>
-                    subscriptionManager.Subscribe<MessageTypeOne>(ProviderName, ConnectionString));
-            }
-        }
-
-        private SubscriptionService GetSubscriptionService(SubscribeType subscribeType)
+        private ISubscriptionService ExerciseSubscriptionService(SubscribeType subscribeType, List<string> messageTypes)
         {
             var workQueue = new Mock<IQueue>();
 
@@ -127,16 +82,6 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
             var queueService = new Mock<IQueueService>();
 
             queueService.Setup(m => m.Get(It.IsAny<string>())).Returns(workQueue.Object);
-
-            var serviceBusConfiguration = new ServiceBusConfiguration(queueService.Object);
-
-            serviceBusConfiguration.Configure(new ServiceBusOptions
-            {
-                Inbox = new InboxOptions
-                {
-                    WorkQueueUri = WorkQueueUri
-                }
-            });
 
             var connectionStringOptions = new Mock<IOptionsMonitor<ConnectionStringOptions>>();
 
@@ -147,17 +92,25 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
                 ConnectionString = ConnectionString
             });
 
-            var subscriptionOptions = Options.Create(new SubscriptionOptions
+            var serviceBusOptions = new ServiceBusOptions
             {
-                SubscribeType = subscribeType
-            });
+                Inbox = new InboxOptions
+                {
+                    WorkQueueUri = WorkQueueUri
+                },
+                SubscriptionOptions = new SubscriptionOptions
+                {
+                    SubscribeType = subscribeType,
+                    ConnectionStringName = "shuttle",
+                    MessageTypes = messageTypes
+                }
+            };
 
             var scriptProviderOptions = Options.Create(new ScriptProviderOptions());
 
             var pipelineFactory = new Mock<IPipelineFactory>();
 
-            var subscriptionService = new SubscriptionService(connectionStringOptions.Object, subscriptionOptions,
-                serviceBusConfiguration, pipelineFactory.Object,
+            var subscriptionService = new SubscriptionService(connectionStringOptions.Object, Options.Create(serviceBusOptions), pipelineFactory.Object,
                 new ScriptProvider(scriptProviderOptions, DatabaseContextCache), DatabaseContextFactory,
                 DatabaseGateway);
 
