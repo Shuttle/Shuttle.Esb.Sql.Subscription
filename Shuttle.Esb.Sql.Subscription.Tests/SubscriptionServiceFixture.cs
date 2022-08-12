@@ -98,12 +98,13 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
                 {
                     WorkQueueUri = WorkQueueUri
                 },
-                SubscriptionOptions = new SubscriptionOptions
-                {
-                    SubscribeType = subscribeType,
-                    ConnectionStringName = "shuttle",
-                    MessageTypes = messageTypes
-                }
+            };
+
+            var subscriptionOptions = new SubscriptionOptions
+            {
+                SubscribeType = subscribeType,
+                ConnectionStringName = "shuttle",
+                MessageTypes = messageTypes
             };
 
             var scriptProviderOptions = Options.Create(new ScriptProviderOptions());

@@ -47,8 +47,7 @@ namespace Shuttle.Esb.Sql.Subscription
 
             pipelineFactory.PipelineCreated += PipelineCreated;
 
-            var connectionStringName = _serviceBusOptions.SubscriptionOptions
-                .ConnectionStringName;
+            var connectionStringName = _serviceBusOptions.Subscription.ConnectionStringName;
             var connectionString = connectionStringOptions.Get(connectionStringName);
 
             if (connectionString == null)
@@ -96,14 +95,14 @@ namespace Shuttle.Esb.Sql.Subscription
         {
             Guard.AgainstNull(pipelineEvent, nameof(pipelineEvent));
 
-            var messageTypes = _serviceBusOptions.SubscriptionOptions?.MessageTypes ?? Enumerable.Empty<string>();
+            var messageTypes = _serviceBusOptions.Subscription?.MessageTypes ?? Enumerable.Empty<string>();
 
             if (!messageTypes.Any())
             {
                 return;
             }
 
-            if (_serviceBusOptions.IsWorker() || _serviceBusOptions.SubscriptionOptions.SubscribeType == SubscribeType.Ignore)
+            if (_serviceBusOptions.IsWorker() || _serviceBusOptions.Subscription.SubscribeType == SubscribeType.Ignore)
             {
                 return;
             }
@@ -119,7 +118,7 @@ namespace Shuttle.Esb.Sql.Subscription
             {
                 foreach (var messageType in messageTypes)
                 {
-                    if (_serviceBusOptions.SubscriptionOptions.SubscribeType == SubscribeType.Normal)
+                    if (_serviceBusOptions.Subscription.SubscribeType == SubscribeType.Normal)
                     {
                         _databaseGateway.Execute(
                             RawQuery.Create(
