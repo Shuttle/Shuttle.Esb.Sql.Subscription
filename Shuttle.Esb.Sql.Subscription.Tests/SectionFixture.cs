@@ -24,6 +24,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
 			Assert.AreEqual("connection-string-name", section.ConnectionStringName);
 			Assert.AreEqual(SubscribeOption.Ensure, section.Subscribe);
+			Assert.AreEqual(TimeSpan.FromMinutes(10), section.CacheTimeout);
 		}
 	}
 }
