@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration;
 using System.Data;
 using System.Linq;
+using System.Runtime.Caching;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Data;
 using Shuttle.Core.Logging;
@@ -24,11 +26,11 @@ namespace Shuttle.Esb.Sql.Subscription
 
         private readonly IServiceBusConfiguration _serviceBusConfiguration;
 
-        private readonly Dictionary<string, List<string>> _subscribers = new Dictionary<string, List<string>>();
+        private readonly MemoryCache _subscribersCache = new MemoryCache("subscribers");
         private readonly string _subscriptionConnectionString;
         private readonly string _subscriptionProviderName;
 
-        private bool _deferSubscribtions = true;
+        private bool _deferSubscriptions = true;
 
         public SubscriptionManager(IServiceBusEvents events, IServiceBusConfiguration serviceBusConfiguration,
             ISubscriptionConfiguration configuration, IScriptProvider scriptProvider,
@@ -117,7 +119,7 @@ namespace Shuttle.Esb.Sql.Subscription
         {
             Guard.AgainstNull(messageTypeFullNames, "messageTypeFullNames");
 
-            if (_deferSubscribtions)
+            if (_deferSubscriptions)
             {
                 _deferredSubscriptions.AddRange(messageTypeFullNames);
 
@@ -186,11 +188,11 @@ namespace Shuttle.Esb.Sql.Subscription
 
             var messageType = message.GetType().FullName ?? string.Empty;
 
-            if (!_subscribers.ContainsKey(messageType))
+            if (!_subscribersCache.Contains(messageType))
             {
                 lock (Padlock)
                 {
-                    if (!_subscribers.ContainsKey(messageType))
+                    if (!_subscribersCache.Contains(messageType))
                     {
                         DataTable table;
 
@@ -203,19 +205,19 @@ namespace Shuttle.Esb.Sql.Subscription
                                     .AddParameterValue(SubscriptionManagerColumns.MessageType, messageType));
                         }
 
-                        _subscribers.Add(messageType, (from DataRow row in table.Rows
+                        _subscribersCache.Set(messageType, (from DataRow row in table.Rows
                                 select SubscriptionManagerColumns.InboxWorkQueueUri.MapFrom(row))
-                            .ToList());
+                            .ToList(), DateTimeOffset.Now.Add(_configuration.CacheTimeout));
                     }
                 }
             }
 
-            return _subscribers[messageType];
+            return (IEnumerable<string>)_subscribersCache.Get(messageType);
         }
 
         private void ServiceBus_Started(object sender, EventArgs e)
         {
-            _deferSubscribtions = false;
+            _deferSubscriptions = false;
 
             if (HasDeferredSubscriptions)
             {

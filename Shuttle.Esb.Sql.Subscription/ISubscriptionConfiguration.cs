@@ -1,3 +1,5 @@
+using System;
+
 namespace Shuttle.Esb.Sql.Subscription
 {
 	public interface ISubscriptionConfiguration
@@ -5,5 +7,6 @@ namespace Shuttle.Esb.Sql.Subscription
 		string ProviderName { get; }
 		string ConnectionString { get; }
 		SubscribeOption Subscribe { get; }
+		TimeSpan CacheTimeout { get; }
 	}
 }

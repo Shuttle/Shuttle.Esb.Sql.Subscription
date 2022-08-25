@@ -12,6 +12,9 @@ namespace Shuttle.Esb.Sql.Subscription
         [ConfigurationProperty("subscribe", IsRequired = false, DefaultValue = SubscribeOption.Normal)]
         public SubscribeOption Subscribe => (SubscribeOption) this["subscribe"];
 
+        [ConfigurationProperty("cacheTimeout", IsRequired = false, DefaultValue = "0.0:5:0")]
+        public TimeSpan CacheTimeout => (TimeSpan) this["cacheTimeout"]; 
+
         public static SubscriptionConfiguration Configuration()
         {
             var section = ConfigurationSectionProvider.Open<SubscriptionSection>("shuttle", "subscription");
@@ -23,6 +26,7 @@ namespace Shuttle.Esb.Sql.Subscription
             {
                 connectionStringName = section.ConnectionStringName;
                 configuration.Subscribe = section.Subscribe;
+                configuration.CacheTimeout = section.CacheTimeout;
             }
 
             var settings = ConfigurationManager.ConnectionStrings[connectionStringName];
