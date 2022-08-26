@@ -34,6 +34,13 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
             DatabaseContextFactory = new DatabaseContextFactory(
                 ConnectionStringOptions,
+                Options.Create(new DataAccessOptions
+                {
+                    DatabaseContextFactory = new DatabaseContextFactoryOptions
+                    {
+                        DefaultConnectionStringName = "Shuttle"
+                    }
+                }),
                 new DbConnectionFactory(), 
                 new DbCommandFactory(Options.Create(new DataAccessOptions())), 
                 new ThreadStaticDatabaseContextCache());
@@ -49,8 +56,6 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
                     IsolationLevel = IsolationLevel.ReadCommitted,
                     Timeout = TimeSpan.FromSeconds(120)
                 }));
-
-            DatabaseContextFactory.ConfigureWith("Shuttle");
         }
 
         public IDatabaseGateway DatabaseGateway { get; private set; }
