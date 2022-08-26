@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.Caching;
 using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Data;
@@ -11,9 +12,8 @@ namespace Shuttle.Esb.Sql.Subscription
 {
     public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineObserver<OnStarted>
     {
-        private static readonly object Padlock = new object();
+        private static readonly object Lock = new object();
 
-        private readonly IOptionsMonitor<ConnectionStringOptions> _connectionStringOptions;
         private readonly IDatabaseContextFactory _databaseContextFactory;
 
         private readonly IDatabaseGateway _databaseGateway;
@@ -23,7 +23,7 @@ namespace Shuttle.Esb.Sql.Subscription
         private readonly IScriptProvider _scriptProvider;
         private readonly ServiceBusOptions _serviceBusOptions;
 
-        private readonly Dictionary<string, List<string>> _subscribers = new Dictionary<string, List<string>>();
+        private readonly MemoryCache _subscribersCache = new MemoryCache("Shuttle.Esb.Sql.Subscription:Subscribers");
         private readonly string _subscriptionConnectionString;
         private readonly string _subscriptionProviderName;
 
@@ -38,7 +38,6 @@ namespace Shuttle.Esb.Sql.Subscription
             Guard.AgainstNull(databaseContextFactory, nameof(databaseContextFactory));
             Guard.AgainstNull(databaseGateway, nameof(databaseGateway));
 
-            _connectionStringOptions = connectionStringOptions;
             _serviceBusOptions = serviceBusOptions.Value;
             _pipelineFactory = pipelineFactory;
             _scriptProvider = scriptProvider;
@@ -157,11 +156,11 @@ namespace Shuttle.Esb.Sql.Subscription
 
             var messageType = message.GetType().FullName ?? string.Empty;
 
-            if (!_subscribers.ContainsKey(messageType))
+            if (!_subscribersCache.Contains(messageType))
             {
-                lock (Padlock)
+                lock (Lock)
                 {
-                    if (!_subscribers.ContainsKey(messageType))
+                    if (!_subscribersCache.Contains(messageType))
                     {
                         DataTable table;
 
@@ -174,14 +173,14 @@ namespace Shuttle.Esb.Sql.Subscription
                                     .AddParameterValue(Columns.MessageType, messageType));
                         }
 
-                        _subscribers.Add(messageType, (from DataRow row in table.Rows
+                        _subscribersCache.Set(messageType, (from DataRow row in table.Rows
                                 select Columns.InboxWorkQueueUri.MapFrom(row))
-                            .ToList());
+                            .ToList(), DateTimeOffset.Now.Add(_serviceBusOptions.Subscription.CacheTimeout));
                     }
                 }
             }
 
-            return _subscribers[messageType];
+            return (IEnumerable<string>)_subscribersCache.Get(messageType);
         }
 
         private void PipelineCreated(object sender, PipelineEventArgs e)
