@@ -18,6 +18,7 @@
 		<dependencies>
       <dependency id="Shuttle.Core.Data" version="13.0.0" />
       <dependency id="Shuttle.Esb" version="13.0.0" />
+      <dependency id="System.Runtime.Caching" version="6.0.0" />
 		</dependencies>
 	</metadata>
 	<files>
