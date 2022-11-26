@@ -35,9 +35,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Shuttle.Core.Data" Version="13.0.0" />
+        <PackageReference Include="Shuttle.Core.Data" Version="13.0.1" />
         <PackageReference Include="Shuttle.Esb" Version="13.2.0" />
-        <PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
+        <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
