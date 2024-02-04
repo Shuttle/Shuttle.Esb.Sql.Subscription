@@ -55,7 +55,7 @@
 
     <ItemGroup>
       <NuGetBinaries Include="..\bin\$(Configuration)\**\$(PackageName).dll" />
-      <Scripts Include="..\.scripts\**\SubscriptionManagerCreate.sql" />
+      <Scripts Include="..\.scripts\**\SubscriptionServiceCreate.sql" />
     </ItemGroup>
 
     <RemoveDir Directories="release" />

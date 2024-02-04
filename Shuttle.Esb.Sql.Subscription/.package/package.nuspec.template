@@ -12,9 +12,9 @@
 		<readme>docs\README.md</readme>
 		<repository type="git" url="https://github.com/Shuttle/Shuttle.Esb.Sql.Subscription.git" />
 		<projectUrl>https://github.com/Shuttle/Shuttle.Esb.Sql.Subscription</projectUrl>
-		<description>Sql-based implementation of ISubscriptionManager interface for use with Shuttle.Esb.</description>
+		<description>Sql-based implementation of ISubscriptionService interface for use with Shuttle.Esb implementations.</description>
 		<copyright>Copyright (c) #{Year}#, Eben Roux</copyright>
-		<tags>subscriptionmanager pubsub</tags>
+		<tags>subscriptionservice pubsub</tags>
 		<dependencies>
 #{Dependencies}#
 		</dependencies>
