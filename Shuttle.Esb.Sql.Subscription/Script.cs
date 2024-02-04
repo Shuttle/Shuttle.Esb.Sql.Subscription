@@ -2,10 +2,10 @@ namespace Shuttle.Esb.Sql.Subscription
 {
 	public class Script
 	{
-		public static readonly string SubscriptionManagerInboxWorkQueueUris = "SubscriptionManagerInboxWorkQueueUris";
-		public static readonly string SubscriptionManagerExists = "SubscriptionManagerExists";
-		public static readonly string SubscriptionManagerCreate = "SubscriptionManagerCreate";
-		public static readonly string SubscriptionManagerSubscribe = "SubscriptionManagerSubscribe";
-		public static readonly string SubscriptionManagerContains = "SubscriptionManagerContains";
+		public static readonly string SubscriptionServiceInboxWorkQueueUris = "SubscriptionServiceInboxWorkQueueUris";
+		public static readonly string SubscriptionServiceExists = "SubscriptionServiceExists";
+		public static readonly string SubscriptionServiceCreate = "SubscriptionServiceCreate";
+		public static readonly string SubscriptionServiceSubscribe = "SubscriptionServiceSubscribe";
+		public static readonly string SubscriptionServiceContains = "SubscriptionServiceContains";
 	}
 }
