@@ -104,7 +104,6 @@ namespace Shuttle.Esb.Sql.Subscription
             var messageTypes = _serviceBusOptions.Subscription?.MessageTypes ?? Enumerable.Empty<string>();
 
             if (!messageTypes.Any() ||
-                _serviceBusOptions.IsWorker() ||
                 _serviceBusOptions.Subscription.SubscribeType == SubscribeType.Ignore)
             {
                 return;
