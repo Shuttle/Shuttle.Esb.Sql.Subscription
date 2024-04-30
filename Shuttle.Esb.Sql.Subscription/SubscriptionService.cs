@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.Caching;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Data;
@@ -12,20 +14,14 @@ namespace Shuttle.Esb.Sql.Subscription
 {
     public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineObserver<OnStarted>
     {
-        private static readonly object Lock = new object();
+        private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
 
         private readonly IDatabaseContextFactory _databaseContextFactory;
-
         private readonly IDatabaseGateway _databaseGateway;
-
         private readonly IPipelineFactory _pipelineFactory;
-
         private readonly IScriptProvider _scriptProvider;
         private readonly ServiceBusOptions _serviceBusOptions;
-
         private readonly MemoryCache _subscribersCache = new MemoryCache("Shuttle.Esb.Sql.Subscription:Subscribers");
-        private readonly string _subscriptionConnectionString;
-        private readonly string _subscriptionProviderName;
 
         public SubscriptionService(IOptionsMonitor<ConnectionStringOptions> connectionStringOptions, IOptions<ServiceBusOptions> serviceBusOptions,
             IPipelineFactory pipelineFactory, IScriptProvider scriptProvider, IDatabaseContextFactory databaseContextFactory, IDatabaseGateway databaseGateway)
@@ -46,30 +42,16 @@ namespace Shuttle.Esb.Sql.Subscription
 
             pipelineFactory.PipelineCreated += PipelineCreated;
 
-            var connectionStringName = _serviceBusOptions.Subscription.ConnectionStringName;
-            var connectionString = connectionStringOptions.Get(connectionStringName);
-
-            if (connectionString == null)
-            {
-                throw new InvalidOperationException(string.Format(Core.Data.Resources.ConnectionStringMissingException,
-                    connectionStringName));
-            }
-
-            _subscriptionProviderName = connectionString.ProviderName;
-            _subscriptionConnectionString = connectionString.ConnectionString;
-
-            using (_databaseContextFactory.Create(_subscriptionProviderName, _subscriptionConnectionString))
+            using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
             {
                 if (_databaseGateway.GetScalar<int>(
-                        RawQuery.Create(
-                            _scriptProvider.Get(
-                                Script.SubscriptionManagerExists))) != 1)
+                        new Query(
+                            _scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceExists))) != 1)
                 {
                     try
                     {
-                        _databaseGateway.Execute(RawQuery.Create(
-                            _scriptProvider.Get(
-                                Script.SubscriptionManagerCreate)));
+                        _databaseGateway.Execute(new Query(
+                            _scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceCreate)));
                     }
                     catch (Exception ex)
                     {
@@ -92,50 +74,82 @@ namespace Shuttle.Esb.Sql.Subscription
 
         public void Execute(OnStarted pipelineEvent)
         {
+            ExecuteAsync(pipelineEvent, true).GetAwaiter().GetResult();
+        }
+
+        public async Task ExecuteAsync(OnStarted pipelineEvent)
+        {
+            await ExecuteAsync(pipelineEvent, false).ConfigureAwait(false);
+        }
+
+        public IEnumerable<string> GetSubscribedUris(string messageType)
+        {
+            return GetSubscribedUrisAsync(messageType, true).GetAwaiter().GetResult();
+        }
+
+        public async Task<IEnumerable<string>> GetSubscribedUrisAsync(string messageType)
+        {
+            return await GetSubscribedUrisAsync(messageType, false).ConfigureAwait(false);
+        }
+
+        private async Task ExecuteAsync(OnStarted pipelineEvent, bool sync)
+        {
             Guard.AgainstNull(pipelineEvent, nameof(pipelineEvent));
-
-            var messageTypes = _serviceBusOptions.Subscription?.MessageTypes ?? Enumerable.Empty<string>();
-
-            if (!messageTypes.Any())
-            {
-                return;
-            }
-
-            if (_serviceBusOptions.IsWorker() || _serviceBusOptions.Subscription.SubscribeType == SubscribeType.Ignore)
-            {
-                return;
-            }
 
             if (!_serviceBusOptions.HasInbox())
             {
                 throw new InvalidOperationException(Esb.Resources.SubscribeWithNoInboxException);
             }
 
+            var messageTypes = _serviceBusOptions.Subscription?.MessageTypes ?? Enumerable.Empty<string>();
+
+            if (!messageTypes.Any() ||
+                _serviceBusOptions.Subscription.SubscribeType == SubscribeType.Ignore)
+            {
+                return;
+            }
+
             var missingMessageTypes = new List<string>();
 
-            using (_databaseContextFactory.Create(_subscriptionProviderName, _subscriptionConnectionString))
+            using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
             {
                 foreach (var messageType in messageTypes)
                 {
-                    if (_serviceBusOptions.Subscription.SubscribeType == SubscribeType.Normal)
+                    switch (_serviceBusOptions.Subscription.SubscribeType)
                     {
-                        _databaseGateway.Execute(
-                            RawQuery.Create(
-                                    _scriptProvider.Get(Script.SubscriptionManagerSubscribe))
-                                .AddParameterValue(Columns.InboxWorkQueueUri,
-                                    _serviceBusOptions.Inbox.WorkQueueUri)
-                                .AddParameterValue(Columns.MessageType, messageType));
-                    }
-                    else // Ensure
-                    {
-                        if (_databaseGateway.GetScalar<int>(
-                                RawQuery.Create(
-                                        _scriptProvider.Get(Script.SubscriptionManagerContains))
-                                    .AddParameterValue(Columns.InboxWorkQueueUri,
-                                        _serviceBusOptions.Inbox.WorkQueueUri)
-                                    .AddParameterValue(Columns.MessageType, messageType)) == 0)
+                        case SubscribeType.Normal:
                         {
-                            missingMessageTypes.Add(messageType);
+                            var query = new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceSubscribe))
+                                .AddParameter(Columns.InboxWorkQueueUri, _serviceBusOptions.Inbox.WorkQueueUri)
+                                .AddParameter(Columns.MessageType, messageType);
+
+                            if (sync)
+                            {
+                                _databaseGateway.Execute(query);
+                            }
+                            else
+                            {
+                                await _databaseGateway.ExecuteAsync(query).ConfigureAwait(false);
+                            }
+
+                            break;
+                        }
+                        case SubscribeType.Ensure:
+                        {
+                            var query = new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceContains))
+                                .AddParameter(Columns.InboxWorkQueueUri, _serviceBusOptions.Inbox.WorkQueueUri)
+                                .AddParameter(Columns.MessageType, messageType);
+
+                            var count = sync
+                                ? _databaseGateway.GetScalar<int>(query)
+                                : await _databaseGateway.GetScalarAsync<int>(query).ConfigureAwait(false);
+
+                            if (count == 0)
+                            {
+                                missingMessageTypes.Add(messageType);
+                            }
+
+                            break;
                         }
                     }
                 }
@@ -150,34 +164,35 @@ namespace Shuttle.Esb.Sql.Subscription
                 string.Join(",", missingMessageTypes)));
         }
 
-        public IEnumerable<string> GetSubscribedUris(object message)
+        private async Task<IEnumerable<string>> GetSubscribedUrisAsync(string messageType, bool sync)
         {
-            Guard.AgainstNull(message, "message");
+            Guard.AgainstNullOrEmptyString(messageType, nameof(messageType));
 
-            var messageType = message.GetType().FullName ?? string.Empty;
+            await Lock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
-            if (!_subscribersCache.Contains(messageType))
+            try
             {
-                lock (Lock)
+                if (!_subscribersCache.Contains(messageType))
                 {
-                    if (!_subscribersCache.Contains(messageType))
+                    DataTable table;
+
+                    using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
                     {
-                        DataTable table;
+                        var query =
+                            new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceInboxWorkQueueUris))
+                                .AddParameter(Columns.MessageType, messageType);
 
-                        using (_databaseContextFactory.Create(_subscriptionProviderName, _subscriptionConnectionString))
-                        {
-                            table = _databaseGateway.GetDataTable(
-                                RawQuery.Create(
-                                        _scriptProvider.Get(
-                                            Script.SubscriptionManagerInboxWorkQueueUris))
-                                    .AddParameterValue(Columns.MessageType, messageType));
-                        }
-
-                        _subscribersCache.Set(messageType, (from DataRow row in table.Rows
-                                select Columns.InboxWorkQueueUri.MapFrom(row))
-                            .ToList(), DateTimeOffset.Now.Add(_serviceBusOptions.Subscription.CacheTimeout));
+                        table = sync
+                            ? _databaseGateway.GetDataTable(query)
+                            : await _databaseGateway.GetDataTableAsync(query);
                     }
+
+                    _subscribersCache.Set(messageType, (from DataRow row in table.Rows select Columns.InboxWorkQueueUri.Value(row)).ToList(), DateTimeOffset.Now.Add(_serviceBusOptions.Subscription.CacheTimeout));
                 }
+            }
+            finally
+            {
+                Lock.Release();
             }
 
             return (IEnumerable<string>)_subscribersCache.Get(messageType);

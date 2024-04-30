@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Transactions;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -13,13 +13,13 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
     [SetUpFixture]
     public class DataAccessFixture
     {
-        protected const string ProviderName = "System.Data.SqlClient";
-        protected const string ConnectionString = "server=.;database=shuttle;user id=sa;password=Pass!000";
+        protected const string ProviderName = "Microsoft.Data.SqlClient";
+        protected const string ConnectionString = "server=.;database=shuttle;user id=sa;password=Pass!000;TrustServerCertificate=true";
 
         [OneTimeSetUp]
         public void GlobalSetup()
         {
-            DbProviderFactories.RegisterFactory("System.Data.SqlClient", SqlClientFactory.Instance);
+            DbProviderFactories.RegisterFactory("Microsoft.Data.SqlClient", SqlClientFactory.Instance);
 
             var connectionStringOptions = new Mock<IOptionsMonitor<ConnectionStringOptions>>();
 
@@ -32,6 +32,8 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
             ConnectionStringOptions = connectionStringOptions.Object;
 
+            DatabaseContextService = new DatabaseContextService();
+
             DatabaseContextFactory = new DatabaseContextFactory(
                 ConnectionStringOptions,
                 Options.Create(new DataAccessOptions
@@ -42,12 +44,10 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
                     }
                 }),
                 new DbConnectionFactory(), 
-                new DbCommandFactory(Options.Create(new DataAccessOptions())), 
-                new ThreadStaticDatabaseContextCache());
+                new DbCommandFactory(Options.Create(new DataAccessOptions())),
+                DatabaseContextService);
 
-            DatabaseContextCache = new ThreadStaticDatabaseContextCache();
-
-            DatabaseGateway = new DatabaseGateway(DatabaseContextCache);
+            DatabaseGateway = new DatabaseGateway(DatabaseContextService);
 
             TransactionScopeFactory =
                 new TransactionScopeFactory(Options.Create(new TransactionScopeOptions
@@ -59,7 +59,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
         }
 
         public IDatabaseGateway DatabaseGateway { get; private set; }
-        public IDatabaseContextCache DatabaseContextCache { get; private set; }
+        public IDatabaseContextService DatabaseContextService { get; private set; }
         public IDatabaseContextFactory DatabaseContextFactory { get; private set; }
         public static ITransactionScopeFactory TransactionScopeFactory { get; private set; }
         public IOptionsMonitor<ConnectionStringOptions> ConnectionStringOptions { get; private set; }
