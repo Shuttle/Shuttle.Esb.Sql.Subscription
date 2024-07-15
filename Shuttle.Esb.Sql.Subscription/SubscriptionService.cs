@@ -20,28 +20,27 @@ namespace Shuttle.Esb.Sql.Subscription
         private readonly IDatabaseGateway _databaseGateway;
         private readonly IPipelineFactory _pipelineFactory;
         private readonly IScriptProvider _scriptProvider;
+        private readonly IDatabaseContextService _databaseContextService;
         private readonly ServiceBusOptions _serviceBusOptions;
         private readonly MemoryCache _subscribersCache = new MemoryCache("Shuttle.Esb.Sql.Subscription:Subscribers");
 
         public SubscriptionService(IOptionsMonitor<ConnectionStringOptions> connectionStringOptions, IOptions<ServiceBusOptions> serviceBusOptions,
-            IPipelineFactory pipelineFactory, IScriptProvider scriptProvider, IDatabaseContextFactory databaseContextFactory, IDatabaseGateway databaseGateway)
+            IPipelineFactory pipelineFactory, IScriptProvider scriptProvider, IDatabaseContextService databaseContextService, IDatabaseContextFactory databaseContextFactory, IDatabaseGateway databaseGateway)
         {
             Guard.AgainstNull(connectionStringOptions, nameof(connectionStringOptions));
             Guard.AgainstNull(serviceBusOptions, nameof(serviceBusOptions));
             Guard.AgainstNull(serviceBusOptions.Value, nameof(serviceBusOptions.Value));
-            Guard.AgainstNull(pipelineFactory, nameof(pipelineFactory));
-            Guard.AgainstNull(scriptProvider, nameof(scriptProvider));
-            Guard.AgainstNull(databaseContextFactory, nameof(databaseContextFactory));
-            Guard.AgainstNull(databaseGateway, nameof(databaseGateway));
-
+            
             _serviceBusOptions = serviceBusOptions.Value;
-            _pipelineFactory = pipelineFactory;
-            _scriptProvider = scriptProvider;
-            _databaseContextFactory = databaseContextFactory;
-            _databaseGateway = databaseGateway;
+            _pipelineFactory = Guard.AgainstNull(pipelineFactory, nameof(pipelineFactory));
+            _scriptProvider = Guard.AgainstNull(scriptProvider, nameof(scriptProvider));
+            _databaseContextService = Guard.AgainstNull(databaseContextService, nameof(databaseContextService));
+            _databaseContextFactory = Guard.AgainstNull(databaseContextFactory, nameof(databaseContextFactory));
+            _databaseGateway = Guard.AgainstNull(databaseGateway, nameof(databaseGateway));
 
             pipelineFactory.PipelineCreated += PipelineCreated;
 
+            using (_databaseContextService.BeginScope())
             using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
             {
                 if (_databaseGateway.GetScalar<int>(
@@ -111,46 +110,47 @@ namespace Shuttle.Esb.Sql.Subscription
 
             var missingMessageTypes = new List<string>();
 
-            using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
+            using (_databaseContextService.BeginScope())
+            await using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
             {
                 foreach (var messageType in messageTypes)
                 {
                     switch (_serviceBusOptions.Subscription.SubscribeType)
                     {
                         case SubscribeType.Normal:
-                        {
-                            var query = new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceSubscribe))
-                                .AddParameter(Columns.InboxWorkQueueUri, _serviceBusOptions.Inbox.WorkQueueUri)
-                                .AddParameter(Columns.MessageType, messageType);
-
-                            if (sync)
                             {
-                                _databaseGateway.Execute(query);
-                            }
-                            else
-                            {
-                                await _databaseGateway.ExecuteAsync(query).ConfigureAwait(false);
-                            }
+                                var query = new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceSubscribe))
+                                    .AddParameter(Columns.InboxWorkQueueUri, _serviceBusOptions.Inbox.WorkQueueUri)
+                                    .AddParameter(Columns.MessageType, messageType);
 
-                            break;
-                        }
+                                if (sync)
+                                {
+                                    _databaseGateway.Execute(query);
+                                }
+                                else
+                                {
+                                    await _databaseGateway.ExecuteAsync(query).ConfigureAwait(false);
+                                }
+
+                                break;
+                            }
                         case SubscribeType.Ensure:
-                        {
-                            var query = new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceContains))
-                                .AddParameter(Columns.InboxWorkQueueUri, _serviceBusOptions.Inbox.WorkQueueUri)
-                                .AddParameter(Columns.MessageType, messageType);
-
-                            var count = sync
-                                ? _databaseGateway.GetScalar<int>(query)
-                                : await _databaseGateway.GetScalarAsync<int>(query).ConfigureAwait(false);
-
-                            if (count == 0)
                             {
-                                missingMessageTypes.Add(messageType);
-                            }
+                                var query = new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceContains))
+                                    .AddParameter(Columns.InboxWorkQueueUri, _serviceBusOptions.Inbox.WorkQueueUri)
+                                    .AddParameter(Columns.MessageType, messageType);
 
-                            break;
-                        }
+                                var count = sync
+                                    ? _databaseGateway.GetScalar<int>(query)
+                                    : await _databaseGateway.GetScalarAsync<int>(query).ConfigureAwait(false);
+
+                                if (count == 0)
+                                {
+                                    missingMessageTypes.Add(messageType);
+                                }
+
+                                break;
+                            }
                     }
                 }
             }
@@ -176,6 +176,7 @@ namespace Shuttle.Esb.Sql.Subscription
                 {
                     DataTable table;
 
+                    using (_databaseContextService.BeginScope())
                     using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
                     {
                         var query =
