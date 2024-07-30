@@ -16,7 +16,6 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
         public void ClearSubscriptions()
         {
-            using (DatabaseContextService.BeginScope())
             using (DatabaseContextFactory.Create("shuttle"))
             {
                 DatabaseGateway.Execute(new Query("delete from SubscriberMessageType"));
@@ -111,7 +110,7 @@ namespace Shuttle.Esb.Sql.Subscription.Tests
 
             var pipelineFactory = new Mock<IPipelineFactory>();
 
-            var subscriptionService = new SubscriptionService(connectionStringOptions.Object, Options.Create(serviceBusOptions), pipelineFactory.Object, new ScriptProvider(connectionStringOptions.Object, scriptProviderOptions), DatabaseContextService, DatabaseContextFactory, DatabaseGateway);
+            var subscriptionService = new SubscriptionService(connectionStringOptions.Object, Options.Create(serviceBusOptions), pipelineFactory.Object, new ScriptProvider(connectionStringOptions.Object, scriptProviderOptions), DatabaseContextFactory, DatabaseGateway);
 
             subscriptionService.Execute(new OnStarted());
 

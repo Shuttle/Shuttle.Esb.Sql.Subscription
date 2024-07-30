@@ -20,12 +20,10 @@ namespace Shuttle.Esb.Sql.Subscription
         private readonly IDatabaseGateway _databaseGateway;
         private readonly IPipelineFactory _pipelineFactory;
         private readonly IScriptProvider _scriptProvider;
-        private readonly IDatabaseContextService _databaseContextService;
         private readonly ServiceBusOptions _serviceBusOptions;
         private readonly MemoryCache _subscribersCache = new MemoryCache("Shuttle.Esb.Sql.Subscription:Subscribers");
 
-        public SubscriptionService(IOptionsMonitor<ConnectionStringOptions> connectionStringOptions, IOptions<ServiceBusOptions> serviceBusOptions,
-            IPipelineFactory pipelineFactory, IScriptProvider scriptProvider, IDatabaseContextService databaseContextService, IDatabaseContextFactory databaseContextFactory, IDatabaseGateway databaseGateway)
+        public SubscriptionService(IOptionsMonitor<ConnectionStringOptions> connectionStringOptions, IOptions<ServiceBusOptions> serviceBusOptions, IPipelineFactory pipelineFactory, IScriptProvider scriptProvider, IDatabaseContextFactory databaseContextFactory, IDatabaseGateway databaseGateway)
         {
             Guard.AgainstNull(connectionStringOptions, nameof(connectionStringOptions));
             Guard.AgainstNull(serviceBusOptions, nameof(serviceBusOptions));
@@ -34,13 +32,11 @@ namespace Shuttle.Esb.Sql.Subscription
             _serviceBusOptions = serviceBusOptions.Value;
             _pipelineFactory = Guard.AgainstNull(pipelineFactory, nameof(pipelineFactory));
             _scriptProvider = Guard.AgainstNull(scriptProvider, nameof(scriptProvider));
-            _databaseContextService = Guard.AgainstNull(databaseContextService, nameof(databaseContextService));
             _databaseContextFactory = Guard.AgainstNull(databaseContextFactory, nameof(databaseContextFactory));
             _databaseGateway = Guard.AgainstNull(databaseGateway, nameof(databaseGateway));
 
             pipelineFactory.PipelineCreated += PipelineCreated;
 
-            using (_databaseContextService.BeginScope())
             using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
             {
                 if (_databaseGateway.GetScalar<int>(
@@ -110,7 +106,6 @@ namespace Shuttle.Esb.Sql.Subscription
 
             var missingMessageTypes = new List<string>();
 
-            using (_databaseContextService.BeginScope())
             await using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
             {
                 foreach (var messageType in messageTypes)
@@ -176,7 +171,6 @@ namespace Shuttle.Esb.Sql.Subscription
                 {
                     DataTable table;
 
-                    using (_databaseContextService.BeginScope())
                     using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
                     {
                         var query =
