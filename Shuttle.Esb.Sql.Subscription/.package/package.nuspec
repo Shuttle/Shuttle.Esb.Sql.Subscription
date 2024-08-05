@@ -16,7 +16,7 @@
 		<copyright>Copyright (c) 2024, Eben Roux</copyright>
 		<tags>subscriptionservice pubsub</tags>
 		<dependencies>
-      <dependency id="Shuttle.Core.Data" version="16.0.2" />
+      <dependency id="Shuttle.Core.Data" version="17.0.0" />
       <dependency id="Shuttle.Esb" version="15.0.0" />
       <dependency id="System.Runtime.Caching" version="8.0.0" />
 		</dependencies>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Data;
@@ -37,6 +38,8 @@ namespace Shuttle.Esb.Sql.Subscription
 
             pipelineFactory.PipelineCreated += PipelineCreated;
 
+            using (new DatabaseContextScope())
+            using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
             using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
             {
                 if (_databaseGateway.GetScalar<int>(
@@ -106,6 +109,8 @@ namespace Shuttle.Esb.Sql.Subscription
 
             var missingMessageTypes = new List<string>();
 
+            using (new DatabaseContextScope())
+            using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
             await using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
             {
                 foreach (var messageType in messageTypes)
@@ -171,7 +176,9 @@ namespace Shuttle.Esb.Sql.Subscription
                 {
                     DataTable table;
 
-                    using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
+                    using (new DatabaseContextScope())
+                    using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
+                    await using (_databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
                     {
                         var query =
                             new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceInboxWorkQueueUris))
