@@ -1,6 +1,5 @@
-﻿namespace Shuttle.Esb.Sql.Subscription
+﻿namespace Shuttle.Esb.Sql.Subscription;
+
+public interface IScriptProvider : Core.Data.IScriptProvider
 {
-	public interface IScriptProvider : Core.Data.IScriptProvider
-	{
-	}
 }

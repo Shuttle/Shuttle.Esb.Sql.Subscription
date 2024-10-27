@@ -8,60 +8,51 @@ using NUnit.Framework;
 using Shuttle.Core.Data;
 using Shuttle.Core.Transactions;
 
-namespace Shuttle.Esb.Sql.Subscription.Tests
+namespace Shuttle.Esb.Sql.Subscription.Tests;
+
+[SetUpFixture]
+public class DataAccessFixture
 {
-    [SetUpFixture]
-    public class DataAccessFixture
+    protected const string ProviderName = "Microsoft.Data.SqlClient";
+    protected const string ConnectionString = "server=.;database=shuttle;user id=sa;password=Pass!000;TrustServerCertificate=true";
+    public IOptionsMonitor<ConnectionStringOptions> ConnectionStringOptions { get; private set; }
+    public IDatabaseContextFactory DatabaseContextFactory { get; private set; }
+    public ITransactionScopeFactory TransactionScopeFactory { get; private set; }
+
+    [OneTimeSetUp]
+    public void GlobalSetup()
     {
-        protected const string ProviderName = "Microsoft.Data.SqlClient";
-        protected const string ConnectionString = "server=.;database=shuttle;user id=sa;password=Pass!000;TrustServerCertificate=true";
+        DbProviderFactories.RegisterFactory("Microsoft.Data.SqlClient", SqlClientFactory.Instance);
 
-        [OneTimeSetUp]
-        public void GlobalSetup()
+        var connectionStringOptions = new Mock<IOptionsMonitor<ConnectionStringOptions>>();
+
+        connectionStringOptions.Setup(m => m.Get(It.IsAny<string>())).Returns(new ConnectionStringOptions
         {
-            DbProviderFactories.RegisterFactory("Microsoft.Data.SqlClient", SqlClientFactory.Instance);
+            Name = "shuttle",
+            ProviderName = ProviderName,
+            ConnectionString = ConnectionString
+        });
 
-            var connectionStringOptions = new Mock<IOptionsMonitor<ConnectionStringOptions>>();
+        ConnectionStringOptions = connectionStringOptions.Object;
 
-            connectionStringOptions.Setup(m => m.Get(It.IsAny<string>())).Returns(new ConnectionStringOptions
+        DatabaseContextFactory = new DatabaseContextFactory(
+            ConnectionStringOptions,
+            Options.Create(new DataAccessOptions
             {
-                Name = "shuttle",
-                ProviderName = ProviderName,
-                ConnectionString = ConnectionString
-            });
-
-            ConnectionStringOptions = connectionStringOptions.Object;
-
-            DatabaseContextService = new DatabaseContextService();
-
-            DatabaseContextFactory = new DatabaseContextFactory(
-                ConnectionStringOptions,
-                Options.Create(new DataAccessOptions
+                DatabaseContextFactory = new()
                 {
-                    DatabaseContextFactory = new DatabaseContextFactoryOptions
-                    {
-                        DefaultConnectionStringName = "Shuttle"
-                    }
-                }),
-                new DbConnectionFactory(), 
-                new DbCommandFactory(Options.Create(new DataAccessOptions())),
-                DatabaseContextService);
+                    DefaultConnectionStringName = "Shuttle"
+                }
+            }),
+            new DbConnectionFactory(),
+            new DbCommandFactory(Options.Create(new DataAccessOptions())));
 
-            DatabaseGateway = new DatabaseGateway(DatabaseContextService);
-
-            TransactionScopeFactory =
-                new TransactionScopeFactory(Options.Create(new TransactionScopeOptions
-                {
-                    Enabled = true,
-                    IsolationLevel = IsolationLevel.ReadCommitted,
-                    Timeout = TimeSpan.FromSeconds(120)
-                }));
-        }
-
-        public IDatabaseGateway DatabaseGateway { get; private set; }
-        public IDatabaseContextService DatabaseContextService { get; private set; }
-        public IDatabaseContextFactory DatabaseContextFactory { get; private set; }
-        public static ITransactionScopeFactory TransactionScopeFactory { get; private set; }
-        public IOptionsMonitor<ConnectionStringOptions> ConnectionStringOptions { get; private set; }
+        TransactionScopeFactory =
+            new TransactionScopeFactory(Options.Create(new TransactionScopeOptions
+            {
+                Enabled = true,
+                IsolationLevel = IsolationLevel.ReadCommitted,
+                Timeout = TimeSpan.FromSeconds(120)
+            }));
     }
 }
