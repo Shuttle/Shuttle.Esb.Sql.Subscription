@@ -33,6 +33,7 @@ public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineO
 
         pipelineFactory.PipelineCreated += PipelineCreated;
 
+        using (new DatabaseContextScope())
         using (var databaseContext = _databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
         {
             if (databaseContext.GetScalarAsync<int>(new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceExists))).GetAwaiter().GetResult() != 1)
@@ -74,6 +75,7 @@ public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineO
 
         var missingMessageTypes = new List<string>();
 
+        using (new DatabaseContextScope())
         await using (var databaseContext = _databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
         {
             foreach (var messageType in messageTypes)
@@ -129,6 +131,7 @@ public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineO
             {
                 IEnumerable<DataRow> rows;
 
+                using (new DatabaseContextScope())
                 await using (var databaseContext = _databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
                 {
                     var query =

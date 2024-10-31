@@ -45,7 +45,8 @@ public class DataAccessFixture
                 }
             }),
             new DbConnectionFactory(),
-            new DbCommandFactory(Options.Create(new DataAccessOptions())));
+            new DbCommandFactory(Options.Create(new DataAccessOptions())),
+            new DatabaseContextService());
 
         TransactionScopeFactory =
             new TransactionScopeFactory(Options.Create(new TransactionScopeOptions
