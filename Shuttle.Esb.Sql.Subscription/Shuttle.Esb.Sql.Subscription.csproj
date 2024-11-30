@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <nullable>enable</nullable>
   </PropertyGroup>
@@ -12,20 +12,6 @@
     <None Include=".package\package.nuspec.template" />
     <None Include=".package\Shuttle.NuGetPackager.MSBuild.dll" />
     <None Include=".package\Shuttle.NuGetPackager.targets" />
-    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionServiceContains.sql" />
-    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionServiceCreate.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionServiceExists.sql" />
-    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionServiceInboxWorkQueueUris.sql" />
-    <EmbeddedResource Include=".scripts\Npgsql\SubscriptionServiceSubscribe.sql" />
-    <EmbeddedResource Include=".scripts\Microsoft.Data.SqlClient\SubscriptionServiceContains.sql" />
-    <EmbeddedResource Include=".scripts\Microsoft.Data.SqlClient\SubscriptionServiceCreate.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include=".scripts\Microsoft.Data.SqlClient\SubscriptionServiceExists.sql" />
-    <EmbeddedResource Include=".scripts\Microsoft.Data.SqlClient\SubscriptionServiceInboxWorkQueueUris.sql" />
-    <EmbeddedResource Include=".scripts\Microsoft.Data.SqlClient\SubscriptionServiceSubscribe.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,6 +33,10 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="SqlServer\" />
   </ItemGroup>
 
 </Project>

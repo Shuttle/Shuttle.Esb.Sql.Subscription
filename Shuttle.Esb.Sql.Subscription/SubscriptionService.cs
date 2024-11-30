@@ -14,43 +14,24 @@ namespace Shuttle.Esb.Sql.Subscription;
 
 public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineObserver<OnStarted>
 {
+    private readonly IQueryFactory _queryFactory;
     private static readonly SemaphoreSlim Lock = new(1, 1);
 
     private readonly IDatabaseContextFactory _databaseContextFactory;
     private readonly IPipelineFactory _pipelineFactory;
-    private readonly IScriptProvider _scriptProvider;
     private readonly ServiceBusOptions _serviceBusOptions;
+    private readonly SqlSubscriptionOptions _sqlSubscriptionOptions;
     private readonly MemoryCache _subscribersCache = new("Shuttle.Esb.Sql.Subscription:Subscribers");
 
-    public SubscriptionService(IOptionsMonitor<ConnectionStringOptions> connectionStringOptions, IOptions<ServiceBusOptions> serviceBusOptions, IPipelineFactory pipelineFactory, IScriptProvider scriptProvider, IDatabaseContextFactory databaseContextFactory)
+    public SubscriptionService(IOptions<ServiceBusOptions> serviceBusOptions, IOptions<SqlSubscriptionOptions> sqlSubscriptionOptions, IPipelineFactory pipelineFactory, IDatabaseContextFactory databaseContextFactory, IQueryFactory queryFactory)
     {
-        Guard.AgainstNull(connectionStringOptions);
-
         _serviceBusOptions = Guard.AgainstNull(Guard.AgainstNull(serviceBusOptions).Value);
+        _sqlSubscriptionOptions = Guard.AgainstNull(Guard.AgainstNull(sqlSubscriptionOptions).Value);
         _pipelineFactory = Guard.AgainstNull(pipelineFactory);
-        _scriptProvider = Guard.AgainstNull(scriptProvider);
         _databaseContextFactory = Guard.AgainstNull(databaseContextFactory);
+        _queryFactory = Guard.AgainstNull(queryFactory);
 
         pipelineFactory.PipelineCreated += PipelineCreated;
-
-        using (new DatabaseContextScope())
-        using (var databaseContext = _databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
-        {
-            if (databaseContext.GetScalarAsync<int>(new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceExists))).GetAwaiter().GetResult() != 1)
-            {
-                try
-                {
-                    databaseContext.ExecuteAsync(new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceCreate))).GetAwaiter().GetResult();
-                }
-                catch (Exception ex)
-                {
-                    if (!ex.Message.Equals("There is already an object named 'SubscriberMessageType' in the database.", StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new DataException(Resources.SubscriptionManagerCreateException, ex);
-                    }
-                }
-            }
-        }
     }
 
     public void Dispose()
@@ -76,7 +57,13 @@ public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineO
         var missingMessageTypes = new List<string>();
 
         using (new DatabaseContextScope())
-        await using (var databaseContext = _databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
+        await using (var databaseContext = _databaseContextFactory.Create(_sqlSubscriptionOptions.ConnectionStringName))
+        {
+            await databaseContext.ExecuteAsync(_queryFactory.Create());
+        }
+
+        using (new DatabaseContextScope())
+        await using (var databaseContext = _databaseContextFactory.Create(_sqlSubscriptionOptions.ConnectionStringName))
         {
             foreach (var messageType in messageTypes)
             {
@@ -84,21 +71,13 @@ public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineO
                 {
                     case SubscribeType.Normal:
                     {
-                        var query = new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceSubscribe))
-                            .AddParameter(Columns.InboxWorkQueueUri, _serviceBusOptions.Inbox.WorkQueueUri)
-                            .AddParameter(Columns.MessageType, messageType);
-
-                        await databaseContext.ExecuteAsync(query).ConfigureAwait(false);
+                        await databaseContext.ExecuteAsync(_queryFactory.Subscribe(messageType)).ConfigureAwait(false);
 
                         break;
                     }
                     case SubscribeType.Ensure:
                     {
-                        var query = new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceContains))
-                            .AddParameter(Columns.InboxWorkQueueUri, _serviceBusOptions.Inbox.WorkQueueUri)
-                            .AddParameter(Columns.MessageType, messageType);
-
-                        var count = await databaseContext.GetScalarAsync<int>(query).ConfigureAwait(false);
+                        var count = await databaseContext.GetScalarAsync<int>(_queryFactory.Contains(messageType)).ConfigureAwait(false);
 
                         if (count == 0)
                         {
@@ -132,16 +111,12 @@ public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineO
                 IEnumerable<DataRow> rows;
 
                 using (new DatabaseContextScope())
-                await using (var databaseContext = _databaseContextFactory.Create(_serviceBusOptions.Subscription.ConnectionStringName))
+                await using (var databaseContext = _databaseContextFactory.Create(_sqlSubscriptionOptions.ConnectionStringName))
                 {
-                    var query =
-                        new Query(_scriptProvider.Get(_serviceBusOptions.Subscription.ConnectionStringName, Script.SubscriptionServiceInboxWorkQueueUris))
-                            .AddParameter(Columns.MessageType, messageType);
-
-                    rows = await databaseContext.GetRowsAsync(query);
+                    rows = await databaseContext.GetRowsAsync(_queryFactory.GetSubscribedUris(messageType));
                 }
 
-                _subscribersCache.Set(messageType, (from DataRow row in rows select Columns.InboxWorkQueueUri.Value(row)).ToList(), DateTimeOffset.Now.Add(_serviceBusOptions.Subscription.CacheTimeout));
+                _subscribersCache.Set(messageType, (from DataRow row in rows select Columns.InboxWorkQueueUri.Value(row)).ToList(), DateTimeOffset.Now.Add(_sqlSubscriptionOptions.CacheTimeout));
             }
         }
         finally
@@ -149,7 +124,7 @@ public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineO
             Lock.Release();
         }
 
-        return _subscribersCache.Get(messageType) as IEnumerable<string> ?? Enumerable.Empty<string>();
+        return _subscribersCache.Get(messageType) as IEnumerable<string> ?? [];
     }
 
     private void PipelineCreated(object? sender, PipelineEventArgs args)
@@ -161,6 +136,6 @@ public class SubscriptionService : ISubscriptionService, IDisposable, IPipelineO
             return;
         }
 
-        args.Pipeline.RegisterObserver(this);
+        args.Pipeline.AddObserver(this);
     }
 }
