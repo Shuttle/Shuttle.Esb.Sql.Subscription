@@ -110,7 +110,7 @@ $$;
 
         var subscriptionService = serviceProvider.GetRequiredService<ISubscriptionService>();
 
-        await ((SubscriptionService)subscriptionService).ExecuteAsync(new PipelineContext<OnStarted>(new Pipeline(serviceProvider)));
+        await serviceProvider.GetRequiredService<SubscriptionObserver>().ExecuteAsync(new PipelineContext<OnStarted>(new Pipeline(serviceProvider)));
 
         return subscriptionService;
     }

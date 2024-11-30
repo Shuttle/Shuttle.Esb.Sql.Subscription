@@ -20,6 +20,5 @@ public class SqlSubscriptionOptionsValidator : IValidateOptions<SqlSubscriptionO
         }
 
         return ValidateOptionsResult.Success;
-
     }
 }

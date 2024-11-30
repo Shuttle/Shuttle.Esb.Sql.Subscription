@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 using System;
+using Microsoft.Extensions.Hosting;
 
 namespace Shuttle.Esb.Sql.Subscription;
 
@@ -23,6 +24,8 @@ public static class ServiceCollectionExtensions
         });
         
         services.AddSingleton<ISubscriptionService, SubscriptionService>();
+        services.AddSingleton<SubscriptionObserver>();
+        services.AddSingleton<IHostedService, SubscriptionHostedService>();
 
         return services;
     }

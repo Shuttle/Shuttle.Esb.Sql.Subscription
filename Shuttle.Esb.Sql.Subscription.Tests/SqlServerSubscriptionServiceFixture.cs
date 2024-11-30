@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 using NUnit.Framework;
 using Shuttle.Core.Data;
 using Shuttle.Core.Pipelines;
-using Shuttle.Core.TransactionScope;
 
 namespace Shuttle.Esb.Sql.Subscription.Tests;
 
@@ -69,23 +67,23 @@ public class SqlServerSubscriptionServiceFixture
         DbProviderFactories.RegisterFactory("Microsoft.Data.SqlClient", SqlClientFactory.Instance);
 
         var services = new ServiceCollection()
-                .AddDataAccess(builder =>
-                {
-                    builder.AddConnectionString("Shuttle", "Microsoft.Data.SqlClient", "server=.;database=shuttle;user id=sa;password=Pass!000;TrustServerCertificate=true");
-                })
-                .AddServiceBus(builder =>
-                {
-                    builder.Options.Inbox.WorkQueueUri = WorkQueueUri;
-                    builder.Options.Subscription.SubscribeType = subscribeType;
-                    builder.Options.Subscription.MessageTypes = messageTypes;
-                })
-                .AddSqlSubscription(builder =>
-                {
-                    builder.Options.ConnectionStringName = "Shuttle";
-                    builder.Options.Schema = "SubscriptionFixture";
+            .AddDataAccess(builder =>
+            {
+                builder.AddConnectionString("Shuttle", "Microsoft.Data.SqlClient", "server=.;database=shuttle;user id=sa;password=Pass!000;TrustServerCertificate=true");
+            })
+            .AddServiceBus(builder =>
+            {
+                builder.Options.Inbox.WorkQueueUri = WorkQueueUri;
+                builder.Options.Subscription.SubscribeType = subscribeType;
+                builder.Options.Subscription.MessageTypes = messageTypes;
+            })
+            .AddSqlSubscription(builder =>
+            {
+                builder.Options.ConnectionStringName = "Shuttle";
+                builder.Options.Schema = "SubscriptionFixture";
 
-                    builder.UseSqlServer();
-                });
+                builder.UseSqlServer();
+            });
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -103,7 +101,7 @@ public class SqlServerSubscriptionServiceFixture
 
         var subscriptionService = serviceProvider.GetRequiredService<ISubscriptionService>();
 
-        await ((SubscriptionService)subscriptionService).ExecuteAsync(new PipelineContext<OnStarted>(new Pipeline(serviceProvider)));
+        await serviceProvider.GetRequiredService<SubscriptionObserver>().ExecuteAsync(new PipelineContext<OnStarted>(new Pipeline(serviceProvider)));
 
         return subscriptionService;
     }
