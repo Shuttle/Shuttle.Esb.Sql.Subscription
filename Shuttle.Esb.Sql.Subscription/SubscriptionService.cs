@@ -5,19 +5,19 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Data;
-using Shuttle.Core.Pipelines;
 
 namespace Shuttle.Esb.Sql.Subscription;
 
 public class SubscriptionService : ISubscriptionService
 {
-    private readonly IQueryFactory _queryFactory;
     private static readonly SemaphoreSlim Lock = new(1, 1);
 
     private readonly IDatabaseContextFactory _databaseContextFactory;
+    private readonly IQueryFactory _queryFactory;
     private readonly SqlSubscriptionOptions _sqlSubscriptionOptions;
     private readonly MemoryCache _subscribersCache = new("Shuttle.Esb.Sql.Subscription:Subscribers");
 
@@ -41,6 +41,7 @@ public class SubscriptionService : ISubscriptionService
                 IEnumerable<DataRow> rows;
 
                 using (new DatabaseContextScope())
+                using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
                 await using (var databaseContext = _databaseContextFactory.Create(_sqlSubscriptionOptions.ConnectionStringName))
                 {
                     rows = await databaseContext.GetRowsAsync(_queryFactory.GetSubscribedUris(messageType));

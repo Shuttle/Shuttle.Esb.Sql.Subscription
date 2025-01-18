@@ -18,6 +18,8 @@ public class QueryFactory : IQueryFactory
     public IQuery Create()
     {
         return new Query($@"
+EXEC sp_getapplock @Resource = '{typeof(QueryFactory).FullName}', @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = 15000;
+
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = '{_schema}')
 BEGIN
     EXEC('CREATE SCHEMA {_schema}');
@@ -48,6 +50,8 @@ BEGIN
     ) 
     ON [PRIMARY]
 END
+
+EXEC sp_releaseapplock @Resource = '{typeof(QueryFactory).FullName}', @LockOwner = 'Session';
 ");
     }
 
