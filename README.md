@@ -14,9 +14,9 @@ The required components may be registered by calling:
 services.AddSqlSubscription(builder => 
 {
     // defaults
-    builder.ConnectionStringName = "Subscription";
-    builder.Schema = "dbo";
-    builder.CacheTimeout = TimeSpan.FromMinutes(5);
+    builder.Options.ConnectionStringName = "Subscription";
+    builder.Options.Schema = "dbo";
+    builder.Options.CacheTimeout = TimeSpan.FromMinutes(5);
 
     builder.UseSqlServer(); // SqlServer
     builder.UseNpgsql(); // Postgres
@@ -52,10 +52,12 @@ And the JSON configuration structure:
 ```json
 {
   "Shuttle": {
-    "SqlSubscription": {
-      "ConnectionStringName": "Subscription",
-      "Schema": "dbo",
-      "CacheTimeout": "00:05:00"
+    "Sql": {
+        "Subscription": {
+          "ConnectionStringName": "Subscription",
+          "Schema": "dbo",
+          "CacheTimeout": "00:05:00"
+        }
     },
     "ServiceBus": {
       "Subscription": {
@@ -75,6 +77,7 @@ And the JSON configuration structure:
 | Option | Default	| Description | 
 | --- | --- | --- |
 | `ConnectionStringName`	 | Subscription | The name of the `ConnectionString` to use to connect to the subscription store. |
+| `Schema`	 | dbo | The name of the database schema to use when accessing the subscription tables. |
 | `CacheTimeout` | `00:05:00` | How long event subscribers should be cached for before refreshing the list. |
 
 When moving to a non-development environment it is recommended that you make use of the `Ensure` option for the `SubscribeType`.
