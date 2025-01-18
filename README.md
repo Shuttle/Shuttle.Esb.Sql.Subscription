@@ -13,7 +13,10 @@ The required components may be registered by calling:
 ```c#
 services.AddSqlSubscription(builder => 
 {
-    builder.Subscription.ConnectionStringName = "Subscription"; // default
+    // defaults
+    builder.ConnectionStringName = "Subscription";
+    builder.Schema = "dbo";
+    builder.CacheTimeout = TimeSpan.FromMinutes(5);
 
     builder.UseSqlServer(); // SqlServer
     builder.UseNpgsql(); // Postgres
@@ -51,6 +54,7 @@ And the JSON configuration structure:
   "Shuttle": {
     "SqlSubscription": {
       "ConnectionStringName": "Subscription",
+      "Schema": "dbo",
       "CacheTimeout": "00:05:00"
     },
     "ServiceBus": {
