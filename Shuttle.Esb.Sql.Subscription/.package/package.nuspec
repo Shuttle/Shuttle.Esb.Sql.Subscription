@@ -3,7 +3,7 @@
 <package>
 	<metadata>
 		<id>Shuttle.Esb.Sql.Subscription</id>
-		<version>16.0.0</version>
+		<version>20.0.0</version>
 		<authors>Eben Roux</authors>
 		<owners>Eben Roux</owners>
 		<license type="expression">BSD-3-Clause</license>
@@ -13,18 +13,17 @@
 		<repository type="git" url="https://github.com/Shuttle/Shuttle.Esb.Sql.Subscription.git" />
 		<projectUrl>https://github.com/Shuttle/Shuttle.Esb.Sql.Subscription</projectUrl>
 		<description>Sql-based implementation of ISubscriptionService interface for use with Shuttle.Esb implementations.</description>
-		<copyright>Copyright (c) 2024, Eben Roux</copyright>
+		<copyright>Copyright (c) 2025, Eben Roux</copyright>
 		<tags>subscriptionservice pubsub</tags>
 		<dependencies>
-      <dependency id="Shuttle.Core.Data" version="17.0.0" />
-      <dependency id="Shuttle.Esb" version="15.0.0" />
-      <dependency id="System.Runtime.Caching" version="8.0.0" />
+      <dependency id="Shuttle.Core.Data" version="20.0.0" />
+      <dependency id="Shuttle.Esb" version="20.0.0" />
+      <dependency id="System.Runtime.Caching" version="8.0.1" />
 		</dependencies>
 	</metadata>
 	<files>
 		<file src="..\..\..\.media\logo.png" target="images" />
 		<file src="..\..\..\README.md" target="docs\" />
 		<file src="lib\**\*.*" target="lib" />
-    <file src="scripts\**\*.sql" target="scripts" />
 	</files>
 </package>

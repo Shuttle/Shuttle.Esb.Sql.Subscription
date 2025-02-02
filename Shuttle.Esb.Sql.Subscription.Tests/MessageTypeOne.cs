@@ -1,7 +1,5 @@
-﻿namespace Shuttle.Esb.Sql.Subscription.Tests
+﻿namespace Shuttle.Esb.Sql.Subscription.Tests;
+
+public class MessageTypeOne
 {
-    public class MessageTypeOne
-    {
-        
-    }
 }

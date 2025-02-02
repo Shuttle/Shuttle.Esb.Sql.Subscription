@@ -19,7 +19,7 @@ namespace Shuttle.Esb.Sql.Subscription {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -79,6 +79,15 @@ namespace Shuttle.Esb.Sql.Subscription {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Option &apos;ConnectionString&apos; may not be empty..
+        /// </summary>
+        public static string ConnectionStringOptionException {
+            get {
+                return ResourceManager.GetString("ConnectionStringOptionException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Subscription to message type &apos;{0}&apos; is missing..
         /// </summary>
         public static string MissingSubscription {
@@ -106,20 +115,20 @@ namespace Shuttle.Esb.Sql.Subscription {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Option &apos;Schema&apos; may not be empty..
+        /// </summary>
+        public static string SchemaOptionException {
+            get {
+                return ResourceManager.GetString("SchemaOptionException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Type &apos;{0}&apos; cannot be cast to a `Shuttle.Esb.Sql.Subscription.SubscriptionManager`..
         /// </summary>
         public static string SubscriptionManagerCastException {
             get {
                 return ResourceManager.GetString("SubscriptionManagerCastException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The database has not been configured for subscription storage and the creation script could not be executed against your database.  The inner exception should provide the reason.  Please run the SubscriptionManagerCreate.sql script file against your database..
-        /// </summary>
-        public static string SubscriptionManagerCreateException {
-            get {
-                return ResourceManager.GetString("SubscriptionManagerCreateException", resourceCulture);
             }
         }
     }

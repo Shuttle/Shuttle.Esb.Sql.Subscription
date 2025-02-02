@@ -1,20 +1,32 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
+using System;
+using Microsoft.Extensions.Hosting;
 
-namespace Shuttle.Esb.Sql.Subscription
+namespace Shuttle.Esb.Sql.Subscription;
+
+public static class ServiceCollectionExtensions
 {
-    public static class ServiceCollectionExtensions
+    public static IServiceCollection AddSqlSubscription(this IServiceCollection services, Action<SqlSubscriptionBuilder>? builder = null)
     {
-        public static IServiceCollection AddSqlSubscription(this IServiceCollection services)
+        var sqlSubscriptionBuilder = new SqlSubscriptionBuilder(Guard.AgainstNull(services));
+
+        builder?.Invoke(sqlSubscriptionBuilder);
+
+        services.AddSingleton<IValidateOptions<SqlSubscriptionOptions>, SqlSubscriptionOptionsValidator>();
+
+        services.AddOptions<SqlSubscriptionOptions>().Configure(options =>
         {
-            Guard.AgainstNull(services, nameof(services));
+            options.ConnectionStringName = sqlSubscriptionBuilder.Options.ConnectionStringName;
+            options.Schema = sqlSubscriptionBuilder.Options.Schema;
+            options.CacheTimeout = sqlSubscriptionBuilder.Options.CacheTimeout;
+        });
+        
+        services.AddSingleton<ISubscriptionService, SubscriptionService>();
+        services.AddSingleton<SubscriptionObserver>();
+        services.AddSingleton<IHostedService, SubscriptionHostedService>();
 
-            services.TryAddSingleton<IScriptProvider, ScriptProvider>();
-            services.AddSingleton<ISubscriptionService, SubscriptionService>();
-
-            return services;
-        }
+        return services;
     }
 }
